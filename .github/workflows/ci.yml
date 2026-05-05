@@ -48,6 +48,13 @@ jobs:
           else
             echo "Skipping frontend install: frontend/package.json not found."
           fi
+      - name: Build frontend
+        run: |
+          if [ -f frontend/package.json ]; then
+            npm run build --prefix frontend
+          else
+            echo "Skipping frontend build: frontend/package.json not found."
+          fi
       - name: Run frontend tests
         run: |
           if [ -f frontend/package.json ]; then
