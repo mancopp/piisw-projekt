@@ -6,7 +6,7 @@
 - [x] Zainicjalizować Angular + Tailwind w `frontend/`.
 - [x] Dodać routing: `/login`, `/register`, `/offer`, `/my-tickets`, `/inspector/check`.
 - [x] Zaimplementować widoki i komponenty formularzy.
-- [ ] Dodać walidację formularzy i obsługę błędów UI.
+- [x] Dodać walidację formularzy i obsługę błędów UI.
 
 ### Programista B
 - [ ] Przygotować modele DTO i serwisy HTTP.
