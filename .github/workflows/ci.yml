@@ -51,7 +51,7 @@ jobs:
       - name: Run frontend tests
         run: |
           if [ -f frontend/package.json ]; then
-            npm run test --prefix frontend -- --watch=false --browsers=ChromeHeadless
+            npm run test --prefix frontend -- --watch=false
           else
             echo "Skipping frontend tests: frontend/package.json not found."
           fi
