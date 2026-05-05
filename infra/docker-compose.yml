@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: eticket-postgres
+    environment:
+      POSTGRES_DB: eticket
+      POSTGRES_USER: eticket
+      POSTGRES_PASSWORD: eticket
+    ports:
+      - "5432:5432"
+    volumes:
+      - eticket_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  eticket_postgres_data:
