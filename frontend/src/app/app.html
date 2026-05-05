@@ -1,16 +1,55 @@
-<main>
-  <header>
-    <h1>Elektroniczny bilet miejski</h1>
-    <nav>
-      <a routerLink="/login" routerLinkActive="active">Logowanie</a>
-      <a routerLink="/register" routerLinkActive="active">Rejestracja</a>
-      <a routerLink="/offer" routerLinkActive="active">Oferta</a>
-      <a routerLink="/my-tickets" routerLinkActive="active">Moje bilety</a>
-      <a routerLink="/inspector/check" routerLinkActive="active">Weryfikacja</a>
-    </nav>
+<main class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <h1 class="text-2xl font-bold tracking-tight">Elektroniczny bilet miejski</h1>
+      <nav class="flex flex-wrap gap-2 text-sm font-medium">
+        <a
+          routerLink="/login"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Logowanie
+        </a>
+        <a
+          routerLink="/register"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Rejestracja
+        </a>
+        <a
+          routerLink="/offer"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Oferta
+        </a>
+        <a
+          routerLink="/my-tickets"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Moje bilety
+        </a>
+        <a
+          routerLink="/transactions"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Transakcje
+        </a>
+        <a
+          routerLink="/inspector/check"
+          routerLinkActive="bg-slate-900 text-white"
+          class="rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+        >
+          Weryfikacja
+        </a>
+      </nav>
+    </div>
   </header>
 
-  <section>
+  <section class="mx-auto max-w-6xl px-4 py-8">
     <router-outlet />
   </section>
 </main>

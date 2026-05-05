@@ -1,11 +1,55 @@
 import { Component } from '@angular/core';
+import {
+  InspectorCheckFormComponent,
+  InspectorCheckFormValue,
+} from '../components/forms/inspector-check-form.component';
+
+interface TicketCheckResult {
+  status: 'VALID' | 'INVALID';
+  reason: string;
+}
 
 @Component({
   selector: 'app-inspector-check-page',
   standalone: true,
+  imports: [InspectorCheckFormComponent],
   template: `
-    <h2>Weryfikacja biletu</h2>
-    <p>Widok kontroli biletu jest w przygotowaniu.</p>
+    <div class="mx-auto max-w-xl space-y-6">
+      <header class="space-y-1">
+        <h2 class="text-2xl font-semibold text-slate-900">Weryfikacja biletu</h2>
+        <p class="text-sm text-slate-600">
+          Sprawdź ważność biletu na podstawie kodu i identyfikatora pojazdu.
+        </p>
+      </header>
+
+      <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <app-inspector-check-form (submitted)="onFormSubmit($event)" />
+      </section>
+
+      @if (result?.status === 'VALID') {
+        <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <p class="font-semibold">Wynik: {{ result?.status }}</p>
+          <p>Powód: {{ result?.reason }}</p>
+        </section>
+      }
+
+      @if (result?.status === 'INVALID') {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          <p class="font-semibold">Wynik: {{ result?.status }}</p>
+          <p>Powód: {{ result?.reason }}</p>
+        </section>
+      }
+    </div>
   `,
 })
-export class InspectorCheckPageComponent {}
+export class InspectorCheckPageComponent {
+  protected result: TicketCheckResult | null = null;
+
+  protected onFormSubmit(formValue: InspectorCheckFormValue): void {
+    const isValid = formValue.ticketCode.startsWith('TCK-') && formValue.vehicleId.length > 0;
+
+    this.result = isValid
+      ? { status: 'VALID', reason: 'TIME_TICKET_ACTIVE' }
+      : { status: 'INVALID', reason: 'TICKET_NOT_FOUND_OR_INACTIVE' };
+  }
+}

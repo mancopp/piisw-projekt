@@ -3,9 +3,9 @@
 ## Etap 1: Frontend
 
 ### Programista A
-- [ ] Zainicjalizować Angular + Tailwind w `frontend/`.
+- [x] Zainicjalizować Angular + Tailwind w `frontend/`.
 - [x] Dodać routing: `/login`, `/register`, `/offer`, `/my-tickets`, `/inspector/check`.
-- [ ] Zaimplementować widoki i komponenty formularzy.
+- [x] Zaimplementować widoki i komponenty formularzy.
 - [ ] Dodać walidację formularzy i obsługę błędów UI.
 
 ### Programista B
