@@ -6,6 +6,28 @@ import { TicketOffer, MyTicket } from '../models/ticket.dto';
   providedIn: 'root',
 })
 export class TicketService {
+  private readonly mockMyTickets: MyTicket[] = [
+    {
+      id: 101,
+      code: 'TCK-12345ABC',
+      ticketType: 'SINGLE',
+      fareType: 'NORMAL',
+      status: 'PURCHASED',
+      purchasedAt: new Date().toISOString(),
+    },
+    {
+      id: 102,
+      code: 'TCK-98765XYZ',
+      ticketType: 'TIME',
+      fareType: 'NORMAL',
+      status: 'ACTIVATED',
+      purchasedAt: new Date(Date.now() - 3600000).toISOString(),
+      activatedAt: new Date(Date.now() - 600000).toISOString(),
+      validFrom: new Date(Date.now() - 600000).toISOString(),
+      validTo: new Date(Date.now() + 600000).toISOString(),
+    },
+  ];
+
   constructor() {}
 
   getOffers(): Observable<TicketOffer[]> {
@@ -51,29 +73,13 @@ export class TicketService {
   }
 
   getMyTickets(): Observable<MyTicket[]> {
-    const mockMyTickets: MyTicket[] = [
-      {
-        id: 101,
-        code: 'TCK-12345ABC',
-        ticketType: 'SINGLE',
-        fareType: 'NORMAL',
-        status: 'PURCHASED',
-        purchasedAt: new Date().toISOString(),
-      },
-      {
-        id: 102,
-        code: 'TCK-98765XYZ',
-        ticketType: 'TIME',
-        fareType: 'NORMAL',
-        status: 'ACTIVATED',
-        purchasedAt: new Date(Date.now() - 3600000).toISOString(),
-        activatedAt: new Date(Date.now() - 600000).toISOString(),
-        validFrom: new Date(Date.now() - 600000).toISOString(),
-        validTo: new Date(Date.now() + 600000).toISOString(),
-      },
-    ];
-    return of(mockMyTickets);
+    return of(this.mockMyTickets);
   }
+
+  getMyTicketById(ticketId: number): Observable<MyTicket | undefined> {
+    return of(this.mockMyTickets.find((ticket) => ticket.id === ticketId));
+  }
+
   checkTicket(
     ticketCode: string,
     vehicleId: string,

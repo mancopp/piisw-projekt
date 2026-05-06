@@ -7,6 +7,8 @@ import { NotFoundPageComponent } from './pages/not-found-page.component';
 import { OfferPageComponent } from './pages/offer-page.component';
 import { PurchasePageComponent } from './pages/purchase-page.component';
 import { RegisterPageComponent } from './pages/register-page.component';
+import { TicketDetailsPageComponent } from './pages/ticket-details-page.component';
+import { TicketScanPageComponent } from './pages/ticket-scan-page.component';
 import { TransactionsPageComponent } from './pages/transactions-page.component';
 
 import { authGuard } from './core/guards/auth.guard';
@@ -33,6 +35,18 @@ export const routes: Routes = [
   {
     path: 'my-tickets',
     component: MyTicketsPageComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'PASSENGER' },
+  },
+  {
+    path: 'my-tickets/:ticketId',
+    component: TicketDetailsPageComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'PASSENGER' },
+  },
+  {
+    path: 'my-tickets/:ticketId/scan',
+    component: TicketScanPageComponent,
     canActivate: [authGuard, roleGuard],
     data: { role: 'PASSENGER' },
   },
