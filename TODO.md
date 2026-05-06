@@ -23,6 +23,9 @@
 - [ ] Empty states dla innych widoków
 - [x] Lucide icons
 - [x] Walidacja biletów
+- [ ] NavigationLinks hover dla active jest błędnego koloru
+- [ ] NavigationLinks i header - poprawić wygląd na urządzeniach pobilnych
+- [ ] Historia transakcji - poprawić wygląd na urządzeniach pobilnych (tabela wygląda źle)
 
 ## Etap 2: Backend
 
