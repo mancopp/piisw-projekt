@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ArrowLeft, LucideAngularModule, QrCode, Ticket } from 'lucide-angular';
 
 import { MyTicket } from '../core/models/ticket.dto';
 import { TicketService } from '../core/services/ticket.service';
@@ -8,20 +9,24 @@ import { TicketService } from '../core/services/ticket.service';
 @Component({
   selector: 'app-ticket-details-page',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, LucideAngularModule],
   template: `
     <div class="mx-auto max-w-3xl space-y-6">
       <a
         class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         routerLink="/my-tickets"
       >
-        ← Wróć do listy biletów
+        <lucide-angular [img]="backIcon" [size]="16" />
+        Wróć do listy biletów
       </a>
 
       @if (ticket) {
         <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <header class="mb-6 space-y-1">
-            <h2 class="text-2xl font-semibold text-slate-900">Szczegóły biletu</h2>
+            <h2 class="inline-flex items-center gap-2 text-2xl font-semibold text-slate-900">
+              <lucide-angular [img]="ticketIcon" [size]="22" />
+              Szczegóły biletu
+            </h2>
             <p class="text-sm text-slate-600">Pełne informacje o wybranym bilecie.</p>
           </header>
 
@@ -90,9 +95,10 @@ import { TicketService } from '../core/services/ticket.service';
 
           <div class="mt-6">
             <a
-              class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+              class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
               [routerLink]="['/my-tickets', ticket.id, 'scan']"
             >
+              <lucide-angular [img]="scanIcon" [size]="16" />
               Otwórz ekran do skanowania
             </a>
           </div>
@@ -109,6 +115,9 @@ export class TicketDetailsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly ticketService = inject(TicketService);
 
+  protected readonly backIcon = ArrowLeft;
+  protected readonly ticketIcon = Ticket;
+  protected readonly scanIcon = QrCode;
   protected ticket: MyTicket | null = null;
 
   ngOnInit(): void {

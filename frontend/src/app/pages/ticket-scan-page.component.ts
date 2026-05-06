@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ArrowLeft, Copy, LucideAngularModule, QrCode } from 'lucide-angular';
 
 import { MyTicket } from '../core/models/ticket.dto';
 import { TicketService } from '../core/services/ticket.service';
@@ -7,7 +8,7 @@ import { TicketService } from '../core/services/ticket.service';
 @Component({
   selector: 'app-ticket-scan-page',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LucideAngularModule],
   template: `
     <section
       class="relative mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 via-sky-500 to-cyan-400 p-6 shadow-xl"
@@ -16,12 +17,16 @@ import { TicketService } from '../core/services/ticket.service';
         class="absolute left-4 top-4 inline-flex items-center gap-2 rounded-md bg-white/90 px-3 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-white"
         [routerLink]="ticket ? ['/my-tickets', ticket.id] : ['/my-tickets']"
       >
-        ← Wróć
+        <lucide-angular [img]="backIcon" [size]="16" />
+        Wróć
       </a>
 
       @if (ticket) {
         <article class="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl">
-          <p class="mb-4 text-sm font-medium text-slate-500">Zeskanuj kod biletu</p>
+          <p class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
+            <lucide-angular [img]="qrIcon" [size]="16" />
+            Zeskanuj kod biletu
+          </p>
 
           <img
             [src]="qrCodeUrl"
@@ -35,10 +40,12 @@ import { TicketService } from '../core/services/ticket.service';
 
             <button
               type="button"
-              class="mt-3 inline-flex rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition hover:bg-slate-700"
+              class="mt-3 inline-flex h-9 w-9 items-center justify-center rounded-md bg-slate-900 text-white transition hover:bg-slate-700"
+              aria-label="Kopiuj kod"
+              title="Kopiuj kod"
               (click)="copyCode()"
             >
-              Kopiuj kod
+              <lucide-angular [img]="copyIcon" [size]="16" />
             </button>
 
             @if (copyMessage) {
@@ -58,6 +65,9 @@ export class TicketScanPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly ticketService = inject(TicketService);
 
+  protected readonly backIcon = ArrowLeft;
+  protected readonly qrIcon = QrCode;
+  protected readonly copyIcon = Copy;
   protected ticket: MyTicket | null = null;
   protected copyMessage = '';
 

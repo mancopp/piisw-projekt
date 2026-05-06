@@ -21,6 +21,7 @@
 - [x] Zapewnić komunikat "pusta lista" dla oferty biletów
 - [ ] Widok konkretnego biletu - Ładny card z qr codem i możliwością skopiowania, gradientowy background
 - [ ] Empty states dla innych widoków
+- [x] Lucide icons
 
 ## Etap 2: Backend
 

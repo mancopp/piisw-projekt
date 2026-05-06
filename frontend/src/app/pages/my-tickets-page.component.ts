@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ChevronRight, LucideAngularModule, Ticket } from 'lucide-angular';
 
 import { MyTicket } from '../core/models/ticket.dto';
 import { TicketService } from '../core/services/ticket.service';
@@ -8,11 +9,14 @@ import { TicketService } from '../core/services/ticket.service';
 @Component({
   selector: 'app-my-tickets-page',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, LucideAngularModule],
   template: `
     <div class="space-y-4">
       <header class="space-y-1">
-        <h2 class="text-2xl font-semibold text-slate-900">Moje bilety</h2>
+        <h2 class="inline-flex items-center gap-2 text-2xl font-semibold text-slate-900">
+          <lucide-angular [img]="ticketsIcon" [size]="22" />
+          Moje bilety
+        </h2>
         <p class="text-sm text-slate-600">Podgląd aktywnych i historycznych biletów użytkownika.</p>
       </header>
 
@@ -51,6 +55,11 @@ import { TicketService } from '../core/services/ticket.service';
                   </dd>
                 </div>
               </dl>
+
+              <span class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                Szczegóły
+                <lucide-angular [img]="detailsIcon" [size]="14" />
+              </span>
             </a>
           }
         </section>
@@ -65,6 +74,8 @@ import { TicketService } from '../core/services/ticket.service';
 export class MyTicketsPageComponent implements OnInit {
   private ticketService = inject(TicketService);
 
+  protected readonly ticketsIcon = Ticket;
+  protected readonly detailsIcon = ChevronRight;
   protected tickets: MyTicket[] = [];
 
   ngOnInit(): void {

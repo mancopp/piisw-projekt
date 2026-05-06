@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ChevronRight, ListFilter, LucideAngularModule, Tags } from 'lucide-angular';
 import {
   OfferFiltersFormComponent,
   OfferFiltersValue,
@@ -11,16 +12,22 @@ import { TicketOffer } from '../core/models/ticket.dto';
 @Component({
   selector: 'app-offer-page',
   standalone: true,
-  imports: [OfferFiltersFormComponent, RouterLink],
+  imports: [OfferFiltersFormComponent, RouterLink, LucideAngularModule],
   template: `
     <div class="space-y-6">
       <header class="space-y-1">
-        <h2 class="text-2xl font-semibold text-slate-900">Oferta biletów</h2>
+        <h2 class="inline-flex items-center gap-2 text-2xl font-semibold text-slate-900">
+          <lucide-angular [img]="offerIcon" [size]="22" />
+          Oferta biletów
+        </h2>
         <p class="text-sm text-slate-600">Wybierz rodzaj biletu i przejdź do zakupu.</p>
       </header>
 
       <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 class="mb-3 text-lg font-medium text-slate-900">Filtrowanie</h3>
+        <h3 class="mb-3 inline-flex items-center gap-2 text-lg font-medium text-slate-900">
+          <lucide-angular [img]="filtersIcon" [size]="18" />
+          Filtrowanie
+        </h3>
         <app-offer-filters-form (filtersChanged)="onFiltersChanged($event)" />
       </section>
 
@@ -57,10 +64,11 @@ import { TicketOffer } from '../core/models/ticket.dto';
               </dl>
 
               <a
-                class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+                class="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
                 [routerLink]="['/offer', offer.id, 'purchase']"
               >
                 Kup bilet
+                <lucide-angular [img]="buyIcon" [size]="15" />
               </a>
             </article>
           }
@@ -78,6 +86,9 @@ import { TicketOffer } from '../core/models/ticket.dto';
 export class OfferPageComponent implements OnInit {
   private ticketService = inject(TicketService);
 
+  protected readonly offerIcon = Tags;
+  protected readonly filtersIcon = ListFilter;
+  protected readonly buyIcon = ChevronRight;
   protected currentFilters: OfferFiltersValue = {
     ticketType: 'ALL',
     fareType: 'ALL',
