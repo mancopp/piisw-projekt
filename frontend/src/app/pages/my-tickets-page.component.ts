@@ -29,7 +29,9 @@ import { TicketService } from '../core/services/ticket.service';
             >
               <div class="mb-4 flex items-start justify-between gap-3">
                 <p class="font-mono text-xs text-slate-700">{{ ticket.code }}</p>
-                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                <span
+                  class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+                >
                   {{ ticket.status }}
                 </span>
               </div>
@@ -56,7 +58,9 @@ import { TicketService } from '../core/services/ticket.service';
                 </div>
               </dl>
 
-              <span class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-slate-600">
+              <span
+                class="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-slate-600"
+              >
                 Szczegóły
                 <lucide-angular [img]="detailsIcon" [size]="14" />
               </span>
@@ -64,8 +68,25 @@ import { TicketService } from '../core/services/ticket.service';
           }
         </section>
       } @else {
-        <section class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <p class="text-sm text-slate-600">Brak biletów do wyświetlenia.</p>
+        <section
+          class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 py-16 px-4 text-center"
+        >
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200/50 text-slate-500"
+          >
+            <lucide-angular [img]="ticketsIcon" [size]="32" />
+          </div>
+          <h3 class="mt-2 text-lg font-semibold text-slate-900">Twój portfel biletów jest pusty</h3>
+          <p class="mt-2 max-w-sm text-sm text-slate-500">
+            Nie masz jeszcze żadnych aktywnych ani historycznych biletów. Kup swój pierwszy bilet,
+            aby móc z niego korzystać podczas podróży.
+          </p>
+          <a
+            routerLink="/offer"
+            class="mt-6 inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 active:scale-95 shadow-sm"
+          >
+            Zobacz dostępne bilety
+          </a>
         </section>
       }
     </div>
