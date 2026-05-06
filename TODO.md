@@ -19,13 +19,13 @@
 ### Poprawki
 
 - [x] Zapewnić komunikat "pusta lista" dla oferty biletów
-- [ ] Widok konkretnego biletu - Ładny card z qr codem i możliwością skopiowania, gradientowy background
+- [x] Widok konkretnego biletu - Ładny card z qr codem i możliwością skopiowania, gradientowy background
 - [ ] Empty states dla innych widoków
 - [x] Lucide icons
 - [x] Walidacja biletów
-- [ ] NavigationLinks hover dla active jest błędnego koloru
-- [ ] NavigationLinks i header - poprawić wygląd na urządzeniach pobilnych
-- [ ] Historia transakcji - poprawić wygląd na urządzeniach pobilnych (tabela wygląda źle)
+- [x] NavigationLinks hover dla active jest błędnego koloru
+- [x] NavigationLinks i header - poprawić wygląd na urządzeniach pobilnych
+- [x] Historia transakcji - poprawić wygląd na urządzeniach pobilnych (tabela wygląda źle)
 
 ## Etap 2: Backend
 
