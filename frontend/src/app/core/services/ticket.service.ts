@@ -9,7 +9,7 @@ export class TicketService {
   private readonly mockMyTickets: MyTicket[] = [
     {
       id: 101,
-      code: 'TCK-12345ABC',
+      code: 'TCK-1A2B3C4D5E',
       ticketType: 'SINGLE',
       fareType: 'NORMAL',
       status: 'PURCHASED',
@@ -17,12 +17,13 @@ export class TicketService {
     },
     {
       id: 102,
-      code: 'TCK-98765XYZ',
+      code: 'TCK-4Q7K8R2M9P',
       ticketType: 'TIME',
       fareType: 'NORMAL',
       status: 'ACTIVATED',
       purchasedAt: new Date(Date.now() - 3600000).toISOString(),
       activatedAt: new Date(Date.now() - 600000).toISOString(),
+      activatedVehicleId: 'KR-105',
       validFrom: new Date(Date.now() - 600000).toISOString(),
       validTo: new Date(Date.now() + 600000).toISOString(),
     },
@@ -86,13 +87,49 @@ export class TicketService {
   ): Observable<{ status: 'VALID' | 'INVALID'; reason: string }> {
     console.log(`Sprawdzam bilet: ${ticketCode} w pojeździe ${vehicleId}`);
 
-    const isValid = ticketCode.startsWith('TCK-');
+    const ticket = this.mockMyTickets.find((item) => item.code === ticketCode);
+    if (!ticket) {
+      return of({
+        status: 'INVALID',
+        reason: 'Nie znaleziono biletu o podanym kodzie.',
+      });
+    }
 
-    const mockResponse = {
-      status: isValid ? ('VALID' as const) : ('INVALID' as const),
-      reason: isValid ? 'Bilet aktywny i przypisany do pojazdu.' : 'Błędny kod lub bilet nieważny.',
-    };
+    if (ticket.status !== 'ACTIVATED') {
+      return of({
+        status: 'INVALID',
+        reason: 'Bilet nie jest aktywny.',
+      });
+    }
 
-    return of(mockResponse);
+    if (!ticket.validFrom || !ticket.validTo) {
+      return of({
+        status: 'INVALID',
+        reason: 'Brak danych o okresie ważności biletu.',
+      });
+    }
+
+    const now = Date.now();
+    const validFromTimestamp = new Date(ticket.validFrom).getTime();
+    const validToTimestamp = new Date(ticket.validTo).getTime();
+
+    if (now < validFromTimestamp || now > validToTimestamp) {
+      return of({
+        status: 'INVALID',
+        reason: 'Bilet jest poza okresem ważności.',
+      });
+    }
+
+    if (ticket.activatedVehicleId && ticket.activatedVehicleId !== vehicleId) {
+      return of({
+        status: 'INVALID',
+        reason: 'Bilet został aktywowany w innym pojeździe.',
+      });
+    }
+
+    return of({
+      status: 'VALID',
+      reason: 'Bilet aktywny i przypisany do wskazanego pojazdu.',
+    });
   }
 }

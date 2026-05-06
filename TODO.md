@@ -22,6 +22,7 @@
 - [ ] Widok konkretnego biletu - Ładny card z qr codem i możliwością skopiowania, gradientowy background
 - [ ] Empty states dla innych widoków
 - [x] Lucide icons
+- [x] Walidacja biletów
 
 ## Etap 2: Backend
 
