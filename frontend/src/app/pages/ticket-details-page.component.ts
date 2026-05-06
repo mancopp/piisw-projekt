@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ArrowLeft, LucideAngularModule, QrCode, Ticket } from 'lucide-angular';
+import { ArrowLeft, Copy, Check, LucideAngularModule } from 'lucide-angular';
 
 import { MyTicket } from '../core/models/ticket.dto';
 import { TicketService } from '../core/services/ticket.service';
@@ -11,9 +11,9 @@ import { TicketService } from '../core/services/ticket.service';
   standalone: true,
   imports: [DatePipe, RouterLink, LucideAngularModule],
   template: `
-    <div class="mx-auto max-w-3xl space-y-6">
+    <div class="mx-auto max-w-md space-y-6">
       <a
-        class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        class="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         routerLink="/my-tickets"
       >
         <lucide-angular [img]="backIcon" [size]="16" />
@@ -21,91 +21,63 @@ import { TicketService } from '../core/services/ticket.service';
       </a>
 
       @if (ticket) {
-        <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <header class="mb-6 space-y-1">
-            <h2 class="inline-flex items-center gap-2 text-2xl font-semibold text-slate-900">
-              <lucide-angular [img]="ticketIcon" [size]="22" />
-              Szczegóły biletu
-            </h2>
-            <p class="text-sm text-slate-600">Pełne informacje o wybranym bilecie.</p>
-          </header>
+        <div
+          class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 shadow-2xl text-white"
+        >
+          <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+          <div
+            class="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"
+          ></div>
 
-          <dl class="grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">ID</dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">{{ ticket.id }}</dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Kod</dt>
-              <dd class="mt-1 font-mono text-sm text-slate-900">{{ ticket.code }}</dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Typ biletu</dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">{{ ticket.ticketType }}</dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Taryfa</dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">{{ ticket.fareType }}</dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Status</dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">{{ ticket.status }}</dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Data zakupu
-              </dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">
-                {{ ticket.purchasedAt | date: 'yyyy-MM-dd HH:mm' }}
-              </dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Data aktywacji
-              </dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">
-                {{ ticket.activatedAt ? (ticket.activatedAt | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Pojazd kasowania
-              </dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">
-                {{ ticket.activatedVehicleId ?? '—' }}
-              </dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Ważny od
-              </dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">
-                {{ ticket.validFrom ? (ticket.validFrom | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </dd>
-            </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Ważny do
-              </dt>
-              <dd class="mt-1 text-sm font-medium text-slate-900">
-                {{ ticket.validTo ? (ticket.validTo | date: 'yyyy-MM-dd HH:mm') : '—' }}
-              </dd>
-            </div>
-          </dl>
+          <div class="relative z-10 flex flex-col items-center text-center">
+            <p class="mb-1 text-blue-100 font-medium uppercase tracking-wider text-xs">
+              {{ ticket.ticketType }} - {{ ticket.fareType }}
+            </p>
 
-          <div class="mt-6">
-            <a
-              class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-              [routerLink]="['/my-tickets', ticket.id, 'scan']"
+            <h2 class="mb-6 text-2xl font-bold">Status: {{ ticket.status }}</h2>
+
+            <div class="mb-6 rounded-2xl bg-white p-4 shadow-inner">
+              <img
+                [src]="
+                  'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + ticket.code
+                "
+                alt="Kod QR biletu"
+                class="h-48 w-48 object-contain"
+              />
+            </div>
+
+            <div
+              class="mb-6 w-full rounded-xl bg-white/20 p-4 backdrop-blur-sm text-left flex justify-between items-center"
             >
-              <lucide-angular [img]="scanIcon" [size]="16" />
-              Otwórz ekran do skanowania
-            </a>
+              <div>
+                <p class="text-sm text-blue-100 mb-1">Kod biletu</p>
+                <p class="font-mono text-xl font-semibold tracking-widest">{{ ticket.code }}</p>
+              </div>
+              <div class="text-right text-xs text-blue-100">
+                <p>Ważny do:</p>
+                <p class="font-semibold">
+                  {{ ticket.validTo ? (ticket.validTo | date: 'dd.MM.yyyy HH:mm') : '—' }}
+                </p>
+              </div>
+            </div>
+
+            <button
+              (click)="copyCode(ticket.code)"
+              class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-600 shadow-md transition-all hover:bg-slate-50 hover:shadow-lg active:scale-95"
+            >
+              @if (copied) {
+                <lucide-angular [img]="checkIcon" [size]="18" />
+                Skopiowano do schowka!
+              } @else {
+                <lucide-angular [img]="copyIcon" [size]="18" />
+                Skopiuj kod biletu
+              }
+            </button>
           </div>
-        </section>
+        </div>
       } @else {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          Nie znaleziono biletu o podanym identyfikatorze.
+          Ładowanie biletu lub nie znaleziono podanego identyfikatora.
         </section>
       }
     </div>
@@ -116,9 +88,11 @@ export class TicketDetailsPageComponent implements OnInit {
   private readonly ticketService = inject(TicketService);
 
   protected readonly backIcon = ArrowLeft;
-  protected readonly ticketIcon = Ticket;
-  protected readonly scanIcon = QrCode;
+  protected readonly copyIcon = Copy;
+  protected readonly checkIcon = Check;
+
   protected ticket: MyTicket | null = null;
+  protected copied: boolean = false;
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('ticketId');
@@ -135,6 +109,13 @@ export class TicketDetailsPageComponent implements OnInit {
       error: (err) => {
         console.error('Błąd pobierania szczegółów biletu', err);
       },
+    });
+  }
+
+  copyCode(code: string): void {
+    navigator.clipboard.writeText(code).then(() => {
+      this.copied = true;
+      setTimeout(() => (this.copied = false), 2000);
     });
   }
 }
