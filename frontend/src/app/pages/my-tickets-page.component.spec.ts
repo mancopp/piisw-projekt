@@ -79,6 +79,6 @@ describe('MyTicketsPageComponent', () => {
     fixture.detectChanges();
 
     const pageText = fixture.nativeElement.textContent as string;
-    expect(pageText).toContain('Brak biletów do wyświetlenia.');
+    expect(pageText).toContain('Twój portfel biletów jest pusty');
   });
 });
