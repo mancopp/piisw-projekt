@@ -12,17 +12,15 @@ describe('PurchaseOptionsFormComponent', () => {
 
     fixture = TestBed.createComponent(PurchaseOptionsFormComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should require validFrom for PERIOD ticket type', () => {
     const emitted: PurchaseFormValue[] = [];
     component.submitted.subscribe((value) => emitted.push(value));
 
-    (component as any).form.setValue({
-      ticketType: 'PERIOD',
-      validFrom: '',
-    });
+    fixture.componentRef.setInput('ticketType', 'PERIOD');
+    fixture.detectChanges();
+    (component as any).form.setValue({ validFrom: '' });
 
     const formElement = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     formElement.dispatchEvent(new Event('submit'));
@@ -36,10 +34,9 @@ describe('PurchaseOptionsFormComponent', () => {
     const emitted: PurchaseFormValue[] = [];
     component.submitted.subscribe((value) => emitted.push(value));
 
-    (component as any).form.setValue({
-      ticketType: 'PERIOD',
-      validFrom: '2026-05-10',
-    });
+    fixture.componentRef.setInput('ticketType', 'PERIOD');
+    fixture.detectChanges();
+    (component as any).form.setValue({ validFrom: '2026-05-10' });
 
     const formElement = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     formElement.dispatchEvent(new Event('submit'));
@@ -47,9 +44,23 @@ describe('PurchaseOptionsFormComponent', () => {
 
     expect(emitted).toEqual([
       {
-        ticketType: 'PERIOD',
         validFrom: '2026-05-10',
       },
     ]);
+  });
+
+  it('should emit null validFrom for TIME ticket type', () => {
+    const emitted: PurchaseFormValue[] = [];
+    component.submitted.subscribe((value) => emitted.push(value));
+
+    fixture.componentRef.setInput('ticketType', 'TIME');
+    fixture.detectChanges();
+    (component as any).form.setValue({ validFrom: '' });
+
+    const formElement = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    formElement.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(emitted).toEqual([{ validFrom: null }]);
   });
 });

@@ -1,17 +1,10 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 type PurchaseTicketType = 'SINGLE' | 'TIME' | 'PERIOD';
 
 export interface PurchaseFormValue {
-  ticketType: PurchaseTicketType;
-  validFrom: string;
+  validFrom: string | null;
 }
 
 @Component({
@@ -26,40 +19,29 @@ export interface PurchaseFormValue {
         </p>
       }
 
-      <fieldset class="space-y-2">
-        <legend class="text-sm font-medium text-slate-700">Typ biletu</legend>
+      <p class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+        Typ biletu z oferty: <span class="font-medium">{{ ticketTypeLabel }}</span>
+      </p>
 
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-          <input type="radio" formControlName="ticketType" value="SINGLE" />
-          Jednorazowy (aktywacja przy kasowaniu)
+      @if (requiresStartDate) {
+        <label class="block space-y-1">
+          <span class="text-sm font-medium text-slate-700">Data rozpoczęcia</span>
+          <input
+            type="date"
+            formControlName="validFrom"
+            class="w-full rounded-md border px-3 py-2 text-slate-900 outline-none ring-indigo-200 focus:ring-2"
+            [class.border-slate-300]="!isValidFromInvalid"
+            [class.border-rose-400]="isValidFromInvalid"
+          />
+          @if (isValidFromInvalid) {
+            <p class="text-sm text-rose-700">
+              Dla biletu okresowego data rozpoczęcia jest wymagana.
+            </p>
+          }
         </label>
-
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-          <input type="radio" formControlName="ticketType" value="TIME" />
-          Czasowy (okres liczony od aktywacji)
-        </label>
-
-        <label class="flex items-center gap-2 text-sm text-slate-700">
-          <input type="radio" formControlName="ticketType" value="PERIOD" />
-          Okresowy (wymaga daty rozpoczęcia)
-        </label>
-      </fieldset>
-
-      <label class="block space-y-1">
-        <span class="text-sm font-medium text-slate-700">Data rozpoczęcia (dla okresowego)</span>
-        <input
-          type="date"
-          formControlName="validFrom"
-          class="w-full rounded-md border px-3 py-2 text-slate-900 outline-none ring-indigo-200 focus:ring-2"
-          [class.border-slate-300]="!isValidFromInvalid"
-          [class.border-rose-400]="isValidFromInvalid"
-        />
-        @if (isValidFromInvalid) {
-          <p class="text-sm text-rose-700">
-            Dla biletu okresowego data rozpoczęcia jest wymagana.
-          </p>
-        }
-      </label>
+      } @else {
+        <p class="text-sm text-slate-600">Ten typ biletu nie wymaga daty rozpoczęcia przy zakupie.</p>
+      }
 
       <button
         type="submit"
@@ -70,18 +52,32 @@ export interface PurchaseFormValue {
     </form>
   `,
 })
-export class PurchaseOptionsFormComponent {
+export class PurchaseOptionsFormComponent implements OnChanges {
+  @Input() ticketType: PurchaseTicketType | null = null;
   @Output() submitted = new EventEmitter<PurchaseFormValue>();
   private readonly formBuilder = inject(FormBuilder);
   protected submitAttempted = false;
 
-  protected readonly form = this.formBuilder.nonNullable.group(
-    {
-      ticketType: ['TIME' as PurchaseTicketType, [Validators.required]],
-      validFrom: [''],
-    },
-    { validators: periodTicketRequiresStartDate },
-  );
+  protected readonly form = this.formBuilder.nonNullable.group({
+    validFrom: [''],
+  });
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['ticketType']) {
+      return;
+    }
+
+    const validFromControl = this.form.controls.validFrom;
+    if (this.ticketType === 'PERIOD') {
+      validFromControl.setValidators([Validators.required]);
+    } else {
+      validFromControl.clearValidators();
+      validFromControl.setValue('');
+      validFromControl.markAsPristine();
+      validFromControl.markAsUntouched();
+    }
+    validFromControl.updateValueAndValidity();
+  }
 
   protected submit(): void {
     this.submitAttempted = true;
@@ -90,29 +86,31 @@ export class PurchaseOptionsFormComponent {
       return;
     }
 
-    this.submitted.emit(this.form.getRawValue());
+    const rawValidFrom = this.form.controls.validFrom.getRawValue().trim();
+    this.submitted.emit({
+      validFrom: rawValidFrom.length > 0 ? rawValidFrom : null,
+    });
   }
 
   protected get isValidFromInvalid(): boolean {
     const validFromControl = this.form.controls.validFrom;
-    return (
-      this.form.hasError('periodStartDateRequired') &&
-      (validFromControl.touched || this.submitAttempted)
-    );
-  }
-}
-
-function periodTicketRequiresStartDate(control: AbstractControl): ValidationErrors | null {
-  const ticketType = control.get('ticketType')?.value as PurchaseTicketType | undefined;
-  const validFrom = control.get('validFrom')?.value as string | undefined;
-
-  if (ticketType !== 'PERIOD') {
-    return null;
+    return this.ticketType === 'PERIOD' && validFromControl.invalid && (validFromControl.touched || this.submitAttempted);
   }
 
-  if (typeof validFrom === 'string' && validFrom.trim().length > 0) {
-    return null;
+  protected get ticketTypeLabel(): string {
+    if (this.ticketType === 'SINGLE') {
+      return 'Jednorazowy';
+    }
+    if (this.ticketType === 'TIME') {
+      return 'Czasowy';
+    }
+    if (this.ticketType === 'PERIOD') {
+      return 'Okresowy';
+    }
+    return 'Nieznany';
   }
 
-  return { periodStartDateRequired: true };
+  protected get requiresStartDate(): boolean {
+    return this.ticketType === 'PERIOD';
+  }
 }
