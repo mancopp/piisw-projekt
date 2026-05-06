@@ -13,10 +13,11 @@ System umożliwia:
 
 ## 2. Role i uprawnienia
 
-| Rola | Uprawnienia |
+| Rola / status | Uprawnienia |
 |---|---|
 | `PASSENGER` | Rejestracja/logowanie, przegląd oferty, zakup biletu, podgląd swoich biletów i transakcji |
 | `INSPECTOR` | Logowanie, weryfikacja ważności biletu (kod + pojazd) |
+| Niezalogowany użytkownik | Dostęp tylko do `/login`, `/register`, `/not-found` oraz tras publicznych |
 
 ## 3. Reguły biznesowe ważności biletu
 
@@ -37,15 +38,19 @@ System umożliwia:
 
 | Ścieżka | Widok | Dostęp |
 |---|---|---|
+| `/` | Redirect do `/login` | public |
 | `/login` | Logowanie | public |
 | `/register` | Rejestracja | public |
 | `/offer` | Oferta biletów | `PASSENGER` |
 | `/offer/:offerId/purchase` | Zakup wybranego biletu | `PASSENGER` |
 | `/my-tickets` | Moje bilety | `PASSENGER` |
+| `/my-tickets/:ticketId` | Szczegóły biletu | `PASSENGER` |
+| `/my-tickets/:ticketId/scan` | Ekran biletu (QR + kopiowanie kodu) | `PASSENGER` |
 | `/transactions` | Historia transakcji | `PASSENGER` |
 | `/inspector/check` | Sprawdzenie ważności biletu | `INSPECTOR` |
 | `/forbidden` | Brak uprawnień | zalogowany |
-| `/**` | Not found / redirect | public |
+| `/not-found` | Nie znaleziono strony | public |
+| `/**` | Redirect do `/not-found` | public |
 
 ### Guardy
 - `authGuard` — wymaga zalogowania.
