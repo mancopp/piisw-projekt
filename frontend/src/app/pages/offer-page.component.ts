@@ -1,24 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   OfferFiltersFormComponent,
   OfferFiltersValue,
-  TicketFareTypeFilter,
-  TicketTypeFilter,
 } from '../components/forms/offer-filters-form.component';
 
-type TicketType = Exclude<TicketTypeFilter, 'ALL'>;
-type FareType = Exclude<TicketFareTypeFilter, 'ALL'>;
-
-interface TicketOfferView {
-  id: number;
-  name: string;
-  ticketType: TicketType;
-  fareType: FareType;
-  durationMinutes: number | null;
-  validityDays: number | null;
-  price: number;
-}
+import { TicketService } from '../core/services/ticket.service';
+import { TicketOffer } from '../core/models/ticket.dto';
 
 @Component({
   selector: 'app-offer-page',
@@ -79,46 +67,30 @@ interface TicketOfferView {
     </div>
   `,
 })
-export class OfferPageComponent {
+export class OfferPageComponent implements OnInit {
+  private ticketService = inject(TicketService);
+
   protected currentFilters: OfferFiltersValue = {
     ticketType: 'ALL',
     fareType: 'ALL',
   };
 
-  protected readonly offers: TicketOfferView[] = [
-    {
-      id: 1,
-      name: 'Bilet jednorazowy normalny',
-      ticketType: 'SINGLE',
-      fareType: 'NORMAL',
-      durationMinutes: null,
-      validityDays: null,
-      price: 6.0,
-    },
-    {
-      id: 2,
-      name: 'Bilet czasowy 20 min normalny',
-      ticketType: 'TIME',
-      fareType: 'NORMAL',
-      durationMinutes: 20,
-      validityDays: null,
-      price: 4.6,
-    },
-    {
-      id: 3,
-      name: 'Bilet okresowy 30 dni ulgowy',
-      ticketType: 'PERIOD',
-      fareType: 'REDUCED',
-      durationMinutes: null,
-      validityDays: 30,
-      price: 49.0,
-    },
-  ];
+  protected offers: TicketOffer[] = [];
 
-  protected get filteredOffers(): TicketOfferView[] {
+  ngOnInit(): void {
+    this.ticketService.getOffers().subscribe({
+      next: (data) => {
+        this.offers = data;
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  protected get filteredOffers(): TicketOffer[] {
     return this.offers.filter((offer) => {
       const matchesTicketType =
-        this.currentFilters.ticketType === 'ALL' || offer.ticketType === this.currentFilters.ticketType;
+        this.currentFilters.ticketType === 'ALL' ||
+        offer.ticketType === this.currentFilters.ticketType;
       const matchesFareType =
         this.currentFilters.fareType === 'ALL' || offer.fareType === this.currentFilters.fareType;
 

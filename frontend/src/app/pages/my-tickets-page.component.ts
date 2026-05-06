@@ -1,17 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
-interface MyTicketView {
-  code: string;
-  ticketType: 'SINGLE' | 'TIME' | 'PERIOD';
-  status: 'PURCHASED' | 'ACTIVATED' | 'EXPIRED';
-  validFrom: string | null;
-  validTo: string | null;
-  activatedVehicleId: string | null;
-}
+import { MyTicket } from '../core/models/ticket.dto';
+import { TicketService } from '../core/services/ticket.service';
 
 @Component({
   selector: 'app-my-tickets-page',
   standalone: true,
+  imports: [DatePipe],
   template: `
     <div class="space-y-4">
       <header class="space-y-1">
@@ -38,7 +34,8 @@ interface MyTicketView {
                 <td class="px-4 py-3">{{ ticket.status }}</td>
                 <td class="px-4 py-3">
                   @if (ticket.validFrom && ticket.validTo) {
-                    {{ ticket.validFrom }} - {{ ticket.validTo }}
+                    {{ ticket.validFrom | date: 'yyyy-MM-dd HH:mm' }} -
+                    {{ ticket.validTo | date: 'yyyy-MM-dd HH:mm' }}
                   } @else {
                     —
                   }
@@ -52,23 +49,17 @@ interface MyTicketView {
     </div>
   `,
 })
-export class MyTicketsPageComponent {
-  protected readonly tickets: MyTicketView[] = [
-    {
-      code: 'TCK-4Q7K8R2M9P',
-      ticketType: 'TIME',
-      status: 'ACTIVATED',
-      validFrom: '2026-05-04 17:10',
-      validTo: '2026-05-04 17:30',
-      activatedVehicleId: 'KR-105',
-    },
-    {
-      code: 'TCK-L3M2N7P4Q8',
-      ticketType: 'PERIOD',
-      status: 'PURCHASED',
-      validFrom: '2026-05-10 00:00',
-      validTo: '2026-06-09 23:59',
-      activatedVehicleId: null,
-    },
-  ];
+export class MyTicketsPageComponent implements OnInit {
+  private ticketService = inject(TicketService);
+
+  protected tickets: MyTicket[] = [];
+
+  ngOnInit(): void {
+    this.ticketService.getMyTickets().subscribe({
+      next: (data) => {
+        this.tickets = data;
+      },
+      error: (err) => console.error('Błąd pobierania biletów', err),
+    });
+  }
 }

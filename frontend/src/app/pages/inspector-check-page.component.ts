@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   InspectorCheckFormComponent,
   InspectorCheckFormValue,
 } from '../components/forms/inspector-check-form.component';
+
+import { TicketService } from '../core/services/ticket.service';
 
 interface TicketCheckResult {
   status: 'VALID' | 'INVALID';
@@ -27,15 +29,17 @@ interface TicketCheckResult {
       </section>
 
       @if (result?.status === 'VALID') {
-        <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-          <p class="font-semibold">Wynik: {{ result?.status }}</p>
+        <section
+          class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+        >
+          <p class="font-semibold">Wynik: WAŻNY ({{ result?.status }})</p>
           <p>Powód: {{ result?.reason }}</p>
         </section>
       }
 
       @if (result?.status === 'INVALID') {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          <p class="font-semibold">Wynik: {{ result?.status }}</p>
+          <p class="font-semibold">Wynik: NIEWAŻNY ({{ result?.status }})</p>
           <p>Powód: {{ result?.reason }}</p>
         </section>
       }
@@ -43,13 +47,20 @@ interface TicketCheckResult {
   `,
 })
 export class InspectorCheckPageComponent {
+  private ticketService = inject(TicketService);
+
   protected result: TicketCheckResult | null = null;
 
   protected onFormSubmit(formValue: InspectorCheckFormValue): void {
-    const isValid = formValue.ticketCode.startsWith('TCK-') && formValue.vehicleId.length > 0;
+    this.result = null;
 
-    this.result = isValid
-      ? { status: 'VALID', reason: 'TIME_TICKET_ACTIVE' }
-      : { status: 'INVALID', reason: 'TICKET_NOT_FOUND_OR_INACTIVE' };
+    this.ticketService.checkTicket(formValue.ticketCode, formValue.vehicleId).subscribe({
+      next: (response) => {
+        this.result = response;
+      },
+      error: (err) => {
+        console.error('Błąd podczas weryfikacji', err);
+      },
+    });
   }
 }

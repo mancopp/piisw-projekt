@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { LoginFormComponent, LoginFormValue } from '../components/forms/login-form.component';
+import { Router } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
@@ -24,8 +26,29 @@ import { LoginFormComponent, LoginFormValue } from '../components/forms/login-fo
 })
 export class LoginPageComponent {
   protected lastSubmitted: LoginFormValue | null = null;
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  protected isLoading = false;
 
   protected onFormSubmit(formValue: LoginFormValue): void {
     this.lastSubmitted = formValue;
+    this.isLoading = true;
+
+    this.authService.login({ email: formValue.email, password: formValue.password }).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+
+        if (response.role === 'INSPECTOR') {
+          this.router.navigate(['/inspector/check']);
+        } else {
+          this.router.navigate(['/offer']);
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Wystapił bład podczas logowania', err);
+      }
+    });
   }
 }
