@@ -5,56 +5,35 @@
         <lucide-angular [img]="titleIcon" [size]="22" />
         Elektroniczny bilet miejski
       </h1>
-      <nav class="flex flex-wrap gap-2 text-sm font-medium">
-        <a
-          routerLink="/login"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="loginIcon" [size]="16" />
-          Logowanie
-        </a>
-        <a
-          routerLink="/register"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="registerIcon" [size]="16" />
-          Rejestracja
-        </a>
-        <a
-          routerLink="/offer"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="offerIcon" [size]="16" />
-          Oferta
-        </a>
-        <a
-          routerLink="/my-tickets"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="myTicketsIcon" [size]="16" />
-          Moje bilety
-        </a>
-        <a
-          routerLink="/transactions"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="transactionsIcon" [size]="16" />
-          Transakcje
-        </a>
-        <a
-          routerLink="/inspector/check"
-          routerLinkActive="bg-slate-900 text-white"
-          class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
-        >
-          <lucide-angular [img]="checkIcon" [size]="16" />
-          Weryfikacja
-        </a>
-      </nav>
+      @if (authService.isLoggedIn()) {
+        <div class="flex flex-col items-end gap-3">
+          <nav class="flex flex-wrap justify-end gap-2 text-sm font-medium">
+            @for (link of currentLinks; track link.route) {
+              <a
+                [routerLink]="link.route"
+                routerLinkActive="bg-slate-900 text-white"
+                class="inline-flex items-center gap-2 rounded-md px-3 py-2 text-slate-700 transition hover:bg-slate-100"
+              >
+                <lucide-angular [img]="link.icon" [size]="16" />
+                {{ link.label }}
+              </a>
+            }
+          </nav>
+
+          <div class="flex flex-wrap items-center justify-end gap-3 text-sm text-slate-700">
+            <span class="rounded-md bg-slate-100 px-3 py-1">
+              {{ currentUserEmail }} · {{ roleLabel }}
+            </span>
+            <button
+              type="button"
+              (click)="logout()"
+              class="rounded-md border border-slate-300 px-3 py-1 font-medium text-slate-700 transition hover:bg-slate-100"
+            >
+              Wyloguj
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </header>
 

@@ -8,6 +8,7 @@ import {LoginRequest, AuthResponse, RegisterRequest} from '../models/auth.dto';
 export class AuthService {
   private readonly TOKEN_KEY = 'ebilet_token';
   private readonly ROLE_KEY = 'ebilet_role';
+  private readonly EMAIL_KEY = 'ebilet_email';
 
   constructor() {}
 
@@ -19,7 +20,7 @@ export class AuthService {
 
     return of(mockResponse).pipe(
       delay(1000),
-      tap((response: AuthResponse) => this.setSession(response))
+      tap((response: AuthResponse) => this.setSession(response, data.email))
     );
   }
 
@@ -28,21 +29,45 @@ export class AuthService {
     return of(undefined).pipe(delay(1000));
   }
 
-  private setSession(authResult: AuthResponse): void {
+  private setSession(authResult: AuthResponse, email: string): void {
     localStorage.setItem(this.TOKEN_KEY, authResult.token);
     localStorage.setItem(this.ROLE_KEY, authResult.role);
+    localStorage.setItem(this.EMAIL_KEY, email);
   }
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.ROLE_KEY);
+    localStorage.removeItem(this.EMAIL_KEY);
   }
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem(this.TOKEN_KEY);
   }
 
-  getRole(): string | null {
-    return localStorage.getItem(this.ROLE_KEY);
+  getRole(): AuthResponse['role'] | null {
+    const role = localStorage.getItem(this.ROLE_KEY);
+    if (role === 'PASSENGER' || role === 'INSPECTOR') {
+      return role;
+    }
+
+    return null;
+  }
+
+  getUserEmail(): string | null {
+    return localStorage.getItem(this.EMAIL_KEY);
+  }
+
+  getHomeRoute(): '/offer' | '/inspector/check' | '/login' {
+    const role = this.getRole();
+    if (role === 'INSPECTOR') {
+      return '/inspector/check';
+    }
+
+    if (role === 'PASSENGER') {
+      return '/offer';
+    }
+
+    return '/login';
   }
 }

@@ -1,4 +1,4 @@
-import { ActivatedRoute, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ForbiddenPageComponent } from './pages/forbidden-page.component';
 import { InspectorCheckPageComponent } from './pages/inspector-check-page.component';
 import { LoginPageComponent } from './pages/login-page.component';
@@ -12,13 +12,14 @@ import { TicketScanPageComponent } from './pages/ticket-scan-page.component';
 import { TransactionsPageComponent } from './pages/transactions-page.component';
 
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
 
-  { path: 'login', component: LoginPageComponent },
-  { path: 'register', component: RegisterPageComponent },
+  { path: 'login', component: LoginPageComponent, canActivate: [guestGuard] },
+  { path: 'register', component: RegisterPageComponent, canActivate: [guestGuard] },
 
   {
     path: 'offer',
