@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideAngularModule,
+  LucideIconData,
   QrCode,
   Receipt,
   ShieldCheck,
@@ -14,7 +15,7 @@ import { AuthService } from './core/services/auth.service';
 interface NavigationLink {
   route: string;
   label: string;
-  icon: typeof Tags;
+  icon: LucideIconData;
 }
 
 @Component({
