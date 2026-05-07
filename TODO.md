@@ -20,7 +20,7 @@
 
 - [x] Zapewnić komunikat "pusta lista" dla oferty biletów
 - [x] Widok konkretnego biletu - Ładny card z qr codem i możliwością skopiowania, gradientowy background
-- [ ] Empty states dla innych widoków
+- [x] Empty states dla innych widoków
 - [x] Lucide icons
 - [x] Walidacja biletów
 - [x] NavigationLinks hover dla active jest błędnego koloru
