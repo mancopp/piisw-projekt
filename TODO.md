@@ -33,7 +33,7 @@
 
 - [x] Endpointy auth: rejestracja/logowanie.
 - [x] Role: `PASSENGER`, `INSPECTOR`.
-- [ ] Endpointy oferty biletowej i zakupu.
+- [x] Endpointy oferty biletowej i zakupu.
 - [ ] Logika biznesowa zakupionych biletów (`my tickets`, historia transakcji).
 
 ### Programista B
