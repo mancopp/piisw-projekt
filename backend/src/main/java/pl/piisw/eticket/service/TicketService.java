@@ -65,4 +65,21 @@ public class TicketService {
                 .ticketType(offer.getTicketType())
                 .build();
     }
+
+    public java.util.List<pl.piisw.eticket.dto.TicketResponse> getMyTickets(AppUser user) {
+        return ticketRepository.findAllByUser(user).stream()
+                .map(ticket -> pl.piisw.eticket.dto.TicketResponse.builder()
+                        .id(ticket.getId())
+                        .code(ticket.getCode())
+                        .ticketType(ticket.getOffer().getTicketType())
+                        .fareType(ticket.getOffer().getFareType())
+                        .status(ticket.getStatus())
+                        .purchasedAt(ticket.getPurchasedAt())
+                        .activatedAt(ticket.getActivatedAt())
+                        .activatedVehicleId(ticket.getActivatedVehicleId())
+                        .validFrom(ticket.getValidFrom())
+                        .validTo(ticket.getValidTo())
+                        .build())
+                .toList();
+    }
 }

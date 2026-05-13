@@ -25,4 +25,10 @@ public class TicketController {
         TicketPurchaseResponse response = ticketService.purchaseTicket(user, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<java.util.List<pl.piisw.eticket.dto.TicketResponse>> getMyTickets(
+            @AuthenticationPrincipal AppUser user) {
+        return ResponseEntity.ok(ticketService.getMyTickets(user));
+    }
 }
