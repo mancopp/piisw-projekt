@@ -135,16 +135,14 @@ public class TicketService {
             return invalidCheck(ticket, controlTime, "TICKET_INVALIDATED");
         }
 
-        if (ticket.getStatus() == TicketStatus.EXPIRED) {
-            return invalidCheck(ticket, controlTime, "TICKET_EXPIRED");
-        }
-
+        // Check PERIOD tickets first (before general EXPIRED status check)
+        // because period tickets may be "not started yet" even if previously marked expired
         if (ticket.getOffer().getTicketType() == TicketType.PERIOD) {
             if (ticket.getValidFrom() == null || ticket.getValidTo() == null) {
                 return invalidCheck(ticket, controlTime, "PERIOD_TICKET_NOT_READY");
             }
             if (controlTime.isBefore(ticket.getValidFrom())) {
-                return invalidCheck(ticket, controlTime, "PERIOD_TICKET_NOT_YET_ACTIVE");
+                return invalidCheck(ticket, controlTime, "PERIOD_TICKET_NOT_STARTED");
             }
             if (controlTime.isAfter(ticket.getValidTo())) {
                 ticket.setStatus(TicketStatus.EXPIRED);
@@ -152,6 +150,10 @@ public class TicketService {
                 return invalidCheck(ticket, controlTime, "PERIOD_TICKET_EXPIRED");
             }
             return validCheck(ticket, controlTime, "PERIOD_TICKET_ACTIVE");
+        }
+
+        if (ticket.getStatus() == TicketStatus.EXPIRED) {
+            return invalidCheck(ticket, controlTime, "TICKET_EXPIRED");
         }
 
         if (ticket.getStatus() != TicketStatus.ACTIVATED || ticket.getActivatedAt() == null) {
