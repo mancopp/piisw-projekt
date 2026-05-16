@@ -1,8 +1,15 @@
 package pl.piisw.eticket.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 import pl.piisw.eticket.dto.PurchaseRequest;
+import pl.piisw.eticket.dto.TicketActivationRequest;
+import pl.piisw.eticket.dto.TicketActivationResponse;
+import pl.piisw.eticket.dto.TicketCheckRequest;
+import pl.piisw.eticket.dto.TicketCheckResponse;
 import pl.piisw.eticket.dto.TicketPurchaseResponse;
 import pl.piisw.eticket.model.*;
 import pl.piisw.eticket.repository.OfferRepository;
@@ -15,6 +22,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class TicketService {
 
     private final TicketRepository ticketRepository;
@@ -23,14 +31,19 @@ public class TicketService {
 
     public TicketPurchaseResponse purchaseTicket(AppUser user, PurchaseRequest request) {
         TicketOffer offer = offerRepository.findById(request.getOfferId())
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono oferty biletu!"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono oferty biletu!"));
 
         Instant now = Instant.now();
-        Instant validFrom = request.getValidFrom() != null ? request.getValidFrom() : null;
+        Instant validFrom = request.getValidFrom();
         Instant validTo = null;
 
-        if (offer.getTicketType() == TicketType.PERIOD && validFrom != null) {
+        if (offer.getTicketType() == TicketType.PERIOD) {
+            if (validFrom == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "validFrom is required for PERIOD ticket");
+            }
             validTo = validFrom.plus(offer.getValidityDays(), ChronoUnit.DAYS);
+        } else {
+            validFrom = null;
         }
 
         String uniqueCode = "TCK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -81,5 +94,109 @@ public class TicketService {
                         .validTo(ticket.getValidTo())
                         .build())
                 .toList();
+    }
+
+    public TicketActivationResponse activateTicket(TicketActivationRequest request) {
+        Ticket ticket = ticketRepository.findByCode(request.getTicketCode())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono biletu!"));
+
+        if (ticket.getStatus() == TicketStatus.ACTIVATED
+                || ticket.getStatus() == TicketStatus.INVALIDATED
+                || ticket.getStatus() == TicketStatus.EXPIRED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bilet nie może zostać ponownie skasowany");
+        }
+
+        Instant activationTime = request.getActivationTime();
+        ticket.setStatus(TicketStatus.ACTIVATED);
+        ticket.setActivatedAt(activationTime);
+        ticket.setActivatedVehicleId(request.getVehicleId());
+
+        if (ticket.getOffer().getTicketType() == TicketType.TIME) {
+            ticket.setValidFrom(activationTime);
+            ticket.setValidTo(activationTime.plus(ticket.getOffer().getDurationMinutes(), ChronoUnit.MINUTES));
+        }
+
+        ticketRepository.save(ticket);
+
+        return TicketActivationResponse.builder()
+                .ticketCode(ticket.getCode())
+                .result("ACTIVATED")
+                .build();
+    }
+
+    public TicketCheckResponse checkTicket(TicketCheckRequest request) {
+        Ticket ticket = ticketRepository.findByCode(request.getTicketCode())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono biletu!"));
+
+        Instant controlTime = request.getControlTime();
+        String vehicleId = request.getVehicleId();
+
+        if (ticket.getStatus() == TicketStatus.INVALIDATED) {
+            return invalidCheck(ticket, controlTime, "TICKET_INVALIDATED");
+        }
+
+        if (ticket.getStatus() == TicketStatus.EXPIRED) {
+            return invalidCheck(ticket, controlTime, "TICKET_EXPIRED");
+        }
+
+        if (ticket.getOffer().getTicketType() == TicketType.PERIOD) {
+            if (ticket.getValidFrom() == null || ticket.getValidTo() == null) {
+                return invalidCheck(ticket, controlTime, "PERIOD_TICKET_NOT_READY");
+            }
+            if (controlTime.isBefore(ticket.getValidFrom())) {
+                return invalidCheck(ticket, controlTime, "PERIOD_TICKET_NOT_YET_ACTIVE");
+            }
+            if (controlTime.isAfter(ticket.getValidTo())) {
+                ticket.setStatus(TicketStatus.EXPIRED);
+                ticketRepository.save(ticket);
+                return invalidCheck(ticket, controlTime, "PERIOD_TICKET_EXPIRED");
+            }
+            return validCheck(ticket, controlTime, "PERIOD_TICKET_ACTIVE");
+        }
+
+        if (ticket.getStatus() != TicketStatus.ACTIVATED || ticket.getActivatedAt() == null) {
+            return invalidCheck(ticket, controlTime, "TICKET_NOT_ACTIVATED");
+        }
+
+        if (!vehicleId.equals(ticket.getActivatedVehicleId())) {
+            return invalidCheck(ticket, controlTime, "VEHICLE_MISMATCH");
+        }
+
+        if (ticket.getOffer().getTicketType() == TicketType.TIME) {
+            Instant validTo = ticket.getValidTo();
+            Instant validFrom = ticket.getValidFrom();
+            if (validFrom == null || validTo == null) {
+                return invalidCheck(ticket, controlTime, "TIME_TICKET_NOT_READY");
+            }
+            if (controlTime.isBefore(validFrom)) {
+                return invalidCheck(ticket, controlTime, "TIME_TICKET_NOT_YET_ACTIVE");
+            }
+            if (controlTime.isAfter(validTo)) {
+                ticket.setStatus(TicketStatus.EXPIRED);
+                ticketRepository.save(ticket);
+                return invalidCheck(ticket, controlTime, "TIME_TICKET_EXPIRED");
+            }
+            return validCheck(ticket, controlTime, "TIME_TICKET_ACTIVE");
+        }
+
+        return validCheck(ticket, controlTime, "SINGLE_TICKET_ACTIVE");
+    }
+
+    private TicketCheckResponse validCheck(Ticket ticket, Instant checkedAt, String reason) {
+        return TicketCheckResponse.builder()
+                .ticketCode(ticket.getCode())
+                .status("VALID")
+                .reason(reason)
+                .checkedAt(checkedAt)
+                .build();
+    }
+
+    private TicketCheckResponse invalidCheck(Ticket ticket, Instant checkedAt, String reason) {
+        return TicketCheckResponse.builder()
+                .ticketCode(ticket.getCode())
+                .status("INVALID")
+                .reason(reason)
+                .checkedAt(checkedAt)
+                .build();
     }
 }

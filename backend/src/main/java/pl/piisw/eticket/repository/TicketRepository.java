@@ -1,26 +1,16 @@
 package pl.piisw.eticket.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import pl.piisw.eticket.model.AppUser;
 import pl.piisw.eticket.model.Ticket;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Repository
-public class TicketRepository {
-    private final List<Ticket> tickets = new ArrayList<>();
+public interface TicketRepository extends JpaRepository<Ticket, Long> {
+    List<Ticket> findAllByUser(AppUser user);
 
-    public Ticket save(Ticket ticket) {
-        ticket.setId((long) (tickets.size() + 1));
-        tickets.add(ticket);
-        return ticket;
-    }
-
-    public List<Ticket> findAllByUser(AppUser user) {
-        return tickets.stream()
-                .filter(t -> t.getUser().getId().equals(user.getId()))
-                .collect(Collectors.toList());
-    }
+    Optional<Ticket> findByCode(String code);
 }

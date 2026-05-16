@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import jakarta.persistence.*;
 
 import java.time.Instant;
 
@@ -11,15 +14,44 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "ticket")
 public class Ticket {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private AppUser user;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "offer_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TicketOffer offer;
+
+    @Column(nullable = false, unique = true)
     private String code;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TicketStatus status;
+
+    @Column(name = "purchased_at", nullable = false)
     private Instant purchasedAt;
+
+    @Column(name = "activated_at")
     private Instant activatedAt;
+
+    @Column(name = "activated_vehicle_id")
     private String activatedVehicleId;
+
+    @Column(name = "valid_from")
     private Instant validFrom;
+
+    @Column(name = "valid_to")
     private Instant validTo;
 }

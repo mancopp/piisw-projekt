@@ -110,6 +110,15 @@ Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 docker compose -f infra/docker-compose.yml up -d
 ```
 
+Podgląd bazy w przeglądarce: `http://localhost:8081` (Adminer)
+
+Logowanie w Adminer:
+- system: PostgreSQL
+- serwer: `postgres`
+- użytkownik: `eticket`
+- hasło: `eticket`
+- baza: `eticket`
+
 ### Frontend (inicjalizacja)
 
 ```bash

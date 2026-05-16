@@ -11,5 +11,14 @@ services:
     volumes:
       - eticket_postgres_data:/var/lib/postgresql/data
 
+  adminer:
+    image: adminer:latest
+    container_name: eticket-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
 volumes:
   eticket_postgres_data:

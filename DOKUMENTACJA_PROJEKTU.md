@@ -33,6 +33,8 @@ System umożliwia:
 - **Backend:** Spring Boot (REST), Spring Security (JWT), JPA/Hibernate.
 - **DB:** PostgreSQL + Flyway.
 - **Integracje:** REST dla kasowników i biletera.
+- **Podgląd DB:** Adminer z `infra/docker-compose.yml`.
+- **Dane logowania Adminer:** `postgres / eticket / eticket`, baza `eticket`.
 
 ## 5. Routing frontendu (Angular)
 
@@ -293,6 +295,10 @@ Response `200`:
 - `status: TransactionStatus`
 - `createdAt: Instant`
 
+#### `ticket_transaction`
+- tabela transakcji zakupu w PostgreSQL
+- podgląd przez Adminer: `http://localhost:8081`
+
 #### `TicketCheckLog` (opcjonalnie, ale zalecane)
 - `id: Long`
 - `ticket: Ticket`
@@ -310,13 +316,13 @@ Response `200`:
 2. Klucze obce:
    - `ticket.user_id -> app_user.id`
    - `ticket.offer_id -> ticket_offer.id`
-   - `transaction.user_id -> app_user.id`
-   - `transaction.ticket_id -> ticket.id`
+    - `ticket_transaction.user_id -> app_user.id`
+    - `ticket_transaction.ticket_id -> ticket.id`
 3. Indeksy:
    - `ticket(user_id)`
    - `ticket(code)`
    - `ticket(status)`
-   - `transaction(user_id, created_at desc)`
+    - `ticket_transaction(user_id, created_at desc)`
 4. Migracje przez Flyway (`V1__...`, `V2__...` itd.).
 
 ## 10. Obsługa błędów (API)
