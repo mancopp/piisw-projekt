@@ -12,7 +12,10 @@ describe('LoginPageComponent - critical login path', () => {
   let navigatedTo: string[] | null = null;
 
   let mockAuthService: {
-    login: (credentials: { email: string; password: string }) => Observable<{ role: 'PASSENGER' | 'INSPECTOR' }>;
+    login: (credentials: {
+      email: string;
+      password: string;
+    }) => Observable<{ token: string; role: 'PASSENGER' | 'INSPECTOR' }>;
   };
   let mockRouter: { navigate: (path: string[]) => void };
 
@@ -23,7 +26,7 @@ describe('LoginPageComponent - critical login path', () => {
     mockAuthService = {
       login: (credentials: { email: string; password: string }) => {
         loggedCredentials = credentials;
-        return of({ role: 'PASSENGER' });
+        return of({ token: 'jwt-passenger', role: 'PASSENGER' });
       },
     };
 
@@ -63,7 +66,7 @@ describe('LoginPageComponent - critical login path', () => {
   it('should redirect INSPECTOR to the verification page', () => {
     mockAuthService.login = (credentials: { email: string; password: string }) => {
       loggedCredentials = credentials;
-      return of({ role: 'INSPECTOR' });
+      return of({ token: 'jwt-inspector', role: 'INSPECTOR' });
     };
 
     component['onFormSubmit']({ email: 'inspector@test.pl', password: 'StrongPass1' });

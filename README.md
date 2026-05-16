@@ -131,3 +131,9 @@ npx @angular/cli@latest new webapp --directory . --routing --style css --skip-gi
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
 ```
+
+### Integracja frontend ↔ backend
+
+- Frontend używa API pod adresem: `http://localhost:8080/api/v1` (plik `frontend/src/app/core/config/api.config.ts`).
+- Backend domyślnie zezwala na CORS z `http://localhost:4200`.
+- W razie potrzeby zmienić dozwolone originy przez zmienną: `CORS_ALLOWED_ORIGINS`.

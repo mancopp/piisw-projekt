@@ -21,3 +21,19 @@ export interface MyTicket {
   validFrom?: string | null;
   validTo?: string | null;
 }
+
+export interface TicketPurchaseResponse {
+  ticketId: number;
+  code: string;
+  status: 'PURCHASED' | 'ACTIVATED' | 'EXPIRED' | 'INVALIDATED';
+  ticketType: 'SINGLE' | 'TIME' | 'PERIOD';
+}
+
+export interface TransactionResponse {
+  id: number;
+  ticketId: number;
+  amount: number;
+  currency: string;
+  status: 'SUCCESS' | 'FAILED';
+  createdAt: string;
+}

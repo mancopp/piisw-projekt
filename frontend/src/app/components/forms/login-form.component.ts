@@ -39,15 +39,9 @@ export interface LoginFormValue {
         <input
           type="password"
           formControlName="password"
-          required
-          class="w-full rounded-md border px-3 py-2 text-slate-900 outline-none ring-indigo-200 focus:ring-2"
-          [class.border-slate-300]="!isInvalid('password')"
-          [class.border-rose-400]="isInvalid('password')"
+          class="w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-indigo-200 focus:ring-2"
           placeholder="••••••••"
         />
-        @if (isInvalid('password')) {
-          <p class="text-sm text-rose-700">{{ getPasswordErrorMessage() }}</p>
-        }
       </label>
 
       <button
@@ -66,7 +60,7 @@ export class LoginFormComponent {
 
   protected readonly form = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: [''],
   });
 
   protected submit(): void {
@@ -79,7 +73,7 @@ export class LoginFormComponent {
     this.submitted.emit(this.form.getRawValue());
   }
 
-  protected isInvalid(controlName: 'email' | 'password'): boolean {
+  protected isInvalid(controlName: 'email'): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.touched || this.submitAttempted);
   }
@@ -91,14 +85,5 @@ export class LoginFormComponent {
     }
 
     return 'Podaj poprawny adres email.';
-  }
-
-  protected getPasswordErrorMessage(): string {
-    const passwordControl = this.form.controls.password;
-    if (passwordControl.hasError('required')) {
-      return 'Hasło jest wymagane.';
-    }
-
-    return 'Hasło musi mieć co najmniej 8 znaków.';
   }
 }

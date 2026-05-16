@@ -47,4 +47,25 @@ describe('LoginFormComponent', () => {
       },
     ]);
   });
+
+  it('should emit even when password is short', () => {
+    const emitted: LoginFormValue[] = [];
+    component.submitted.subscribe((value) => emitted.push(value));
+
+    (component as any).form.setValue({
+      email: 'user@example.com',
+      password: 'x',
+    });
+
+    const formElement = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    formElement.dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(emitted).toEqual([
+      {
+        email: 'user@example.com',
+        password: 'x',
+      },
+    ]);
+  });
 });

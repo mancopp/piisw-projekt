@@ -65,7 +65,7 @@ export class InspectorCheckFormComponent {
   protected submitAttempted = false;
 
   protected readonly form = this.formBuilder.nonNullable.group({
-    ticketCode: ['', [Validators.required, Validators.pattern(/^TCK-[A-Z0-9]{10}$/)]],
+    ticketCode: ['', [Validators.required, Validators.pattern(/^TCK-[A-Z0-9]{8,10}$/)]],
     vehicleId: ['', [Validators.required, Validators.pattern(/^[A-Z]{2,3}-\d{1,4}$/)]],
   });
 
@@ -90,7 +90,7 @@ export class InspectorCheckFormComponent {
       return 'Kod biletu jest wymagany.';
     }
 
-    return 'Kod biletu musi mieć format TCK-XXXXXXXXXX.';
+    return 'Kod biletu musi mieć format TCK-XXXXXXXX (8-10 znaków).';
   }
 
   protected getVehicleIdErrorMessage(): string {

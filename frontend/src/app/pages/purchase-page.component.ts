@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   PurchaseFormValue,
   PurchaseOptionsFormComponent,
@@ -64,15 +65,23 @@ import { TicketService } from '../core/services/ticket.service';
           }
         </section>
       }
+
+      @if (purchaseError) {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          {{ purchaseError }}
+        </section>
+      }
     </div>
   `,
 })
 export class PurchasePageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly ticketService = inject(TicketService);
   protected readonly offerId = Number(this.route.snapshot.paramMap.get('offerId'));
   protected selectedOffer: TicketOffer | null = null;
   protected lastSubmitted: PurchaseFormValue | null = null;
+  protected purchaseError: string | null = null;
 
   ngOnInit(): void {
     if (!Number.isInteger(this.offerId) || this.offerId <= 0) {
@@ -91,5 +100,15 @@ export class PurchasePageComponent implements OnInit {
 
   protected onFormSubmit(formValue: PurchaseFormValue): void {
     this.lastSubmitted = formValue;
+    this.purchaseError = null;
+    this.ticketService.purchaseTicket(this.offerId, formValue.validFrom).subscribe({
+      next: (response) => {
+        this.router.navigate(['/my-tickets', response.ticketId]);
+      },
+      error: (err) => {
+        this.purchaseError = 'Nie udało się zrealizować zakupu. Spróbuj ponownie.';
+        console.error('Błąd podczas zakupu biletu', err);
+      },
+    });
   }
 }

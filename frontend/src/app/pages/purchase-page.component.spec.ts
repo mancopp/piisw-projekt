@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { PurchasePageComponent } from './purchase-page.component';
@@ -34,6 +35,7 @@ describe('PurchasePageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [PurchasePageComponent],
       providers: [
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
@@ -68,6 +70,7 @@ describe('PurchasePageComponent', () => {
     await TestBed.configureTestingModule({
       imports: [PurchasePageComponent],
       providers: [
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {

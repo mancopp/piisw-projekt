@@ -16,23 +16,24 @@ import { AuthService } from '../core/services/auth.service';
 
       <app-login-form (submitted)="onFormSubmit($event)" />
 
-      @if (lastSubmitted) {
-        <p class="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          Dane formularza gotowe do wysłania: {{ lastSubmitted.email }}
+      @if (errorMessage) {
+        <p class="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          {{ errorMessage }}
         </p>
       }
+
     </div>
   `,
 })
 export class LoginPageComponent {
-  protected lastSubmitted: LoginFormValue | null = null;
+  protected errorMessage: string | null = null;
   private authService = inject(AuthService);
   private router = inject(Router);
 
   protected isLoading = false;
 
   protected onFormSubmit(formValue: LoginFormValue): void {
-    this.lastSubmitted = formValue;
+    this.errorMessage = null;
     this.isLoading = true;
 
     this.authService.login({ email: formValue.email, password: formValue.password }).subscribe({
@@ -47,6 +48,7 @@ export class LoginPageComponent {
       },
       error: (err) => {
         this.isLoading = false;
+        this.errorMessage = 'Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.';
         console.error('Wystapił bład podczas logowania', err);
       }
     });

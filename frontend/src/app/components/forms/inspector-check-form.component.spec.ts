@@ -29,7 +29,9 @@ describe('InspectorCheckFormComponent', () => {
     fixture.detectChanges();
 
     expect(emitted.length).toBe(0);
-    expect(fixture.nativeElement.textContent).toContain('Kod biletu musi mieć format TCK-XXXXXXXXXX');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Kod biletu musi mieć format TCK-XXXXXXXX (8-10 znaków).',
+    );
   });
 
   it('should emit form value when both fields are valid', () => {

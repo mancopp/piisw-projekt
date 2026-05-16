@@ -1,16 +1,22 @@
+export type UserRole = 'PASSENGER' | 'INSPECTOR';
+
 export interface LoginRequest {
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface AuthResponse {
   token: string;
-  role: 'PASSENGER' | 'INSPECTOR';
+  role: UserRole;
 }
 
 export interface RegisterRequest {
   email: string;
-  password?: string;
-  firstName: string;
-  lastName: string;
+  password: string;
+}
+
+export interface BackendAuthResponse {
+  accessToken: string;
+  tokenType: string;
+  role: UserRole;
 }

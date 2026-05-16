@@ -1,18 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { LucideAngularModule, Receipt } from 'lucide-angular';
-
-interface TransactionView {
-  id: number;
-  ticketCode: string;
-  amount: number;
-  status: 'SUCCESS' | 'FAILED';
-  createdAt: string;
-}
+import { TransactionResponse } from '../core/models/ticket.dto';
+import { TicketService } from '../core/services/ticket.service';
 
 @Component({
   selector: 'app-transactions-page',
   standalone: true,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, DatePipe],
   template: `
     <div class="space-y-6">
       <header class="space-y-1">
@@ -41,7 +36,7 @@ interface TransactionView {
               @for (transaction of transactions; track transaction.id) {
                 <tr class="text-slate-700 transition hover:bg-slate-50">
                   <td class="px-4 py-3 font-medium">{{ transaction.id }}</td>
-                  <td class="px-4 py-3 font-mono text-xs">{{ transaction.ticketCode }}</td>
+                  <td class="px-4 py-3 font-mono text-xs">#{{ transaction.ticketId }}</td>
                   <td class="px-4 py-3 font-medium text-slate-900">
                     {{ transaction.amount.toFixed(2) }} PLN
                   </td>
@@ -52,7 +47,7 @@ interface TransactionView {
                       {{ transaction.status }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 text-slate-500">{{ transaction.createdAt }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ transaction.createdAt | date: 'yyyy-MM-dd HH:mm' }}</td>
                 </tr>
               }
             </tbody>
@@ -73,16 +68,16 @@ interface TransactionView {
                 </span>
               </div>
 
-              <div class="space-y-1">
-                <div class="flex justify-between">
-                  <span class="text-sm text-slate-500">Bilet</span>
-                  <span class="font-mono text-xs text-slate-700">{{ transaction.ticketCode }}</span>
+                <div class="space-y-1">
+                  <div class="flex justify-between">
+                    <span class="text-sm text-slate-500">Bilet</span>
+                    <span class="font-mono text-xs text-slate-700">#{{ transaction.ticketId }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-sm text-slate-500">Data</span>
+                    <span class="text-sm text-slate-700">{{ transaction.createdAt | date: 'yyyy-MM-dd HH:mm' }}</span>
+                  </div>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-slate-500">Data</span>
-                  <span class="text-sm text-slate-700">{{ transaction.createdAt }}</span>
-                </div>
-              </div>
 
               <div class="mt-1 flex items-center justify-between rounded-lg bg-slate-50 p-3">
                 <span class="text-sm font-medium text-slate-700">Kwota</span>
@@ -112,23 +107,19 @@ interface TransactionView {
     </div>
   `,
 })
-export class TransactionsPageComponent {
+export class TransactionsPageComponent implements OnInit {
+  private readonly ticketService = inject(TicketService);
   protected readonly receiptIcon = Receipt;
+  protected transactions: TransactionResponse[] = [];
 
-  protected readonly transactions: TransactionView[] = [
-    {
-      id: 6001,
-      ticketCode: 'TCK-4Q7K8R2M9P',
-      amount: 4.6,
-      status: 'SUCCESS',
-      createdAt: '2026-05-04 17:00',
-    },
-    {
-      id: 6002,
-      ticketCode: 'TCK-L3M2N7P4Q8',
-      amount: 49.0,
-      status: 'SUCCESS',
-      createdAt: '2026-05-05 08:12',
-    },
-  ];
+  ngOnInit(): void {
+    this.ticketService.getMyTransactions().subscribe({
+      next: (transactions) => {
+        this.transactions = transactions;
+      },
+      error: (err) => {
+        console.error('Błąd pobierania historii transakcji', err);
+      },
+    });
+  }
 }
