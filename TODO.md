@@ -38,25 +38,25 @@
 
 ### Programista B
 
-- [ ] Endpoint REST dla kasownika (kasowanie biletu).
-- [ ] Endpoint REST dla biletera (weryfikacja ważności biletu).
-- [ ] Generowanie unikalnego kodu biletu.
-- [ ] Testy reguł ważności dla biletów jednorazowych/czasowych/okresowych.
+- [x] Endpoint REST dla kasownika (kasowanie biletu).
+- [x] Endpoint REST dla biletera (weryfikacja ważności biletu).
+- [x] Generowanie unikalnego kodu biletu.
+- [x] Testy reguł ważności dla biletów jednorazowych/czasowych/okresowych.
 
 ## Etap 3: Data persistence
 
 ### Programista A
 
-- [ ] Zaprojektować encje i relacje.
-- [ ] Przygotować migracje Flyway.
-- [ ] Dodać repozytoria i podstawowe zapytania.
-- [ ] Zapewnić spójność transakcji przy zakupie i walidacji.
+- [x] Zaprojektować encje i relacje.
+- [x] Przygotować migracje Flyway.
+- [x] Dodać repozytoria i podstawowe zapytania.
+- [x] Zapewnić spójność transakcji przy zakupie i walidacji.
 
 ### Programista B
 
 - [ ] Dodać ograniczenia DB (FK, unique, check).
-- [ ] Dodać indeksy pod częste zapytania.
-- [ ] Przygotować dane startowe oferty biletów.
+- [x] Dodać indeksy pod częste zapytania.
+- [x] Przygotować dane startowe oferty biletów.
 - [ ] Napisać testy repozytoriów i scenariusze integracyjne z PostgreSQL.
 
 ## CI i jakość
