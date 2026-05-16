@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LoginPageComponent } from './login-page.component';
 import { AuthService } from '../core/services/auth.service';
 import { Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 describe('LoginPageComponent - critical login path', () => {
   let component: LoginPageComponent;
@@ -73,5 +74,43 @@ describe('LoginPageComponent - critical login path', () => {
 
     expect(loggedCredentials).toEqual({ email: 'inspector@test.pl', password: 'StrongPass1' });
     expect(navigatedTo).toEqual(['/inspector/check']);
+  });
+
+  it('should show backend error message from login response', () => {
+    mockAuthService.login = () =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 401,
+            error: {
+              code: 'INVALID_CREDENTIALS',
+              message: 'Nieprawidłowy email lub hasło',
+            },
+          }),
+      );
+
+    component['onFormSubmit']({ email: 'user@test.pl', password: 'bad-pass' });
+
+    expect(navigatedTo).toBeNull();
+    expect(component['errorMessage']).toBe('Nieprawidłowy email lub hasło');
+  });
+
+  it('should show unavailable login service message for bad path response', () => {
+    mockAuthService.login = () =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 404,
+            error: {
+              error: 'Not Found',
+              path: '/api/auth/login-invalid',
+            },
+          }),
+      );
+
+    component['onFormSubmit']({ email: 'user@test.pl', password: 'bad-pass' });
+
+    expect(navigatedTo).toBeNull();
+    expect(component['errorMessage']).toBe('Usługa logowania jest niedostępna. Spróbuj ponownie później.');
   });
 });

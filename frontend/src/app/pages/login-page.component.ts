@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { LoginFormComponent, LoginFormValue } from '../components/forms/login-form.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
@@ -26,9 +27,11 @@ import { AuthService } from '../core/services/auth.service';
   `,
 })
 export class LoginPageComponent {
+  private static readonly DEFAULT_LOGIN_ERROR = 'Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.';
   protected errorMessage: string | null = null;
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   protected isLoading = false;
 
@@ -39,6 +42,7 @@ export class LoginPageComponent {
     this.authService.login({ email: formValue.email, password: formValue.password }).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
 
         if (response.role === 'INSPECTOR') {
           this.router.navigate(['/inspector/check']);
@@ -48,9 +52,37 @@ export class LoginPageComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.';
+        this.errorMessage = this.resolveErrorMessage(err);
+        this.cdr.markForCheck();
         console.error('Wystapił bład podczas logowania', err);
       }
     });
+  }
+
+  private resolveErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return LoginPageComponent.DEFAULT_LOGIN_ERROR;
+    }
+
+    if (error.status === 0) {
+      return 'Brak połączenia z serwerem. Spróbuj ponownie później.';
+    }
+
+    if (typeof error.error === 'string' && error.error.trim().length > 0) {
+      return error.error;
+    }
+
+    if (error.error && typeof error.error === 'object') {
+      const backendError = error.error as { message?: unknown; path?: unknown };
+      if (typeof backendError.message === 'string' && backendError.message.trim().length > 0) {
+        return backendError.message;
+      }
+
+      if (error.status === 404 && typeof backendError.path === 'string' && backendError.path.length > 0) {
+        return 'Usługa logowania jest niedostępna. Spróbuj ponownie później.';
+      }
+    }
+
+    return LoginPageComponent.DEFAULT_LOGIN_ERROR;
   }
 }
