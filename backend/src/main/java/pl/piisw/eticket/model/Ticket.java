@@ -1,7 +1,6 @@
 package pl.piisw.eticket.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -11,12 +10,13 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "ticket")
-public class Ticket {
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "ticket_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -48,10 +48,4 @@ public class Ticket {
 
     @Column(name = "activated_vehicle_id")
     private String activatedVehicleId;
-
-    @Column(name = "valid_from")
-    private Instant validFrom;
-
-    @Column(name = "valid_to")
-    private Instant validTo;
 }

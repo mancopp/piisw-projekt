@@ -13,7 +13,10 @@ import pl.piisw.eticket.dto.PurchaseRequest;
 import pl.piisw.eticket.dto.TicketActivationRequest;
 import pl.piisw.eticket.dto.TicketCheckRequest;
 import pl.piisw.eticket.model.AppUser;
+import pl.piisw.eticket.model.PeriodTicket;
+import pl.piisw.eticket.model.SingleUseTicket;
 import pl.piisw.eticket.model.TicketStatus;
+import pl.piisw.eticket.model.TimeBasedTicket;
 import pl.piisw.eticket.model.UserRole;
 import pl.piisw.eticket.repository.OfferRepository;
 import pl.piisw.eticket.repository.TicketRepository;
@@ -339,6 +342,35 @@ class TicketServiceTest {
             assertNotNull(periodPurchase.getCode());
 
             assertEquals(3, ticketRepository.findAllByUser(passenger).size());
+        }
+
+        @Test
+        @DisplayName("Purchased tickets are stored as proper inheritance subclasses")
+        void purchasedTicketsUseProperSubclassTypes() {
+            AppUser passenger = userRepository.save(passenger());
+            Instant periodStart = Instant.parse("2026-05-01T00:00:00Z");
+
+            var singlePurchase = ticketService.purchaseTicket(passenger, new PurchaseRequest(1L, null));
+            var timePurchase = ticketService.purchaseTicket(passenger, new PurchaseRequest(3L, null));
+            var periodPurchase = ticketService.purchaseTicket(passenger, new PurchaseRequest(4L, periodStart));
+
+            var singleTicket = ticketRepository.findByCode(singlePurchase.getCode()).orElseThrow();
+            var timeTicket = ticketRepository.findByCode(timePurchase.getCode()).orElseThrow();
+            var periodTicket = ticketRepository.findByCode(periodPurchase.getCode()).orElseThrow();
+
+            assertInstanceOf(SingleUseTicket.class, singleTicket);
+            assertInstanceOf(TimeBasedTicket.class, timeTicket);
+            assertInstanceOf(PeriodTicket.class, periodTicket);
+
+            TimeBasedTicket castedTimeTicket = (TimeBasedTicket) timeTicket;
+            assertEquals(castedTimeTicket.getOffer().getDurationMinutes(), castedTimeTicket.getDurationMinutes());
+
+            PeriodTicket castedPeriodTicket = (PeriodTicket) periodTicket;
+            assertEquals(periodStart, castedPeriodTicket.getValidFrom());
+            assertEquals(
+                    periodStart.plus(castedPeriodTicket.getOffer().getValidityDays(), ChronoUnit.DAYS),
+                    castedPeriodTicket.getValidTo()
+            );
         }
     }
 
