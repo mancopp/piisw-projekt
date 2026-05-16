@@ -35,6 +35,7 @@ System umożliwia:
 - **Integracje:** REST dla kasowników i biletera.
 - **Podgląd DB:** Adminer z `infra/docker-compose.yml`.
 - **Dane logowania Adminer:** `postgres / eticket / eticket`, baza `eticket`.
+- **Seedowane konta:** `passenger@example.com / Passenger123!`, `inspector@example.com / Inspector123!`
 
 ## 5. Routing frontendu (Angular)
 

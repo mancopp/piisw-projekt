@@ -119,6 +119,10 @@ Logowanie w Adminer:
 - hasło: `eticket`
 - baza: `eticket`
 
+Seedowane konta:
+- `passenger@example.com` / `Passenger123!`
+- `inspector@example.com` / `Inspector123!`
+
 ### Frontend (inicjalizacja)
 
 ```bash

@@ -2,6 +2,7 @@ package pl.piisw.eticket.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import pl.piisw.eticket.model.FareType;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 
 @Component
 @RequiredArgsConstructor
+@Order(1)
 public class OfferDataSeeder implements CommandLineRunner {
 
     private final OfferRepository offerRepository;
