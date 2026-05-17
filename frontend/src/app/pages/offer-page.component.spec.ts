@@ -66,7 +66,7 @@ describe('OfferPageComponent', () => {
       fareType: 'REDUCED',
     });
 
-    const filteredOffers = fixture.componentInstance['filteredOffers'];
+    const filteredOffers = fixture.componentInstance['filteredOffers']();
     expect(filteredOffers).toHaveLength(1);
     expect(filteredOffers[0]?.name).toBe('Bilet 20 min ulgowy');
   });
@@ -77,6 +77,6 @@ describe('OfferPageComponent', () => {
       fareType: 'REDUCED',
     });
 
-    expect(fixture.componentInstance['filteredOffers']).toHaveLength(0);
+    expect(fixture.componentInstance['filteredOffers']()).toHaveLength(0);
   });
 });

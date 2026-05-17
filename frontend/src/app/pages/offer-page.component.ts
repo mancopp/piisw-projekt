@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ChevronRight, ListFilter, LucideAngularModule, Tags } from 'lucide-angular';
 import {
@@ -31,9 +31,19 @@ import { TicketOffer } from '../core/models/ticket.dto';
         <app-offer-filters-form (filtersChanged)="onFiltersChanged($event)" />
       </section>
 
-      @if (filteredOffers.length > 0) {
+      @if (isLoading()) {
+        <section class="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <p class="text-sm text-slate-600">Ładowanie dostępnych biletów...</p>
+        </section>
+      } @else if (loadError()) {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-center shadow-sm">
+          <p class="text-sm text-rose-700">
+            Nie udało się pobrać oferty biletów. Spróbuj odświeżyć stronę.
+          </p>
+        </section>
+      } @else if (filteredOffers().length > 0) {
         <section class="grid gap-4 md:grid-cols-2">
-          @for (offer of filteredOffers; track offer.id) {
+          @for (offer of filteredOffers(); track offer.id) {
             <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div class="mb-3 flex items-start justify-between gap-2">
                 <h3 class="font-medium text-slate-900">{{ offer.name }}</h3>
@@ -89,35 +99,39 @@ export class OfferPageComponent implements OnInit {
   protected readonly offerIcon = Tags;
   protected readonly filtersIcon = ListFilter;
   protected readonly buyIcon = ChevronRight;
-  protected currentFilters: OfferFiltersValue = {
+  protected readonly currentFilters = signal<OfferFiltersValue>({
     ticketType: 'ALL',
     fareType: 'ALL',
-  };
+  });
+  protected readonly offers = signal<TicketOffer[]>([]);
+  protected readonly isLoading = signal(true);
+  protected readonly loadError = signal<string | null>(null);
+  protected readonly filteredOffers = computed(() => {
+    const filters = this.currentFilters();
+    return this.offers().filter((offer) => {
+      const matchesTicketType = filters.ticketType === 'ALL' || offer.ticketType === filters.ticketType;
+      const matchesFareType = filters.fareType === 'ALL' || offer.fareType === filters.fareType;
 
-  protected offers: TicketOffer[] = [];
+      return matchesTicketType && matchesFareType;
+    });
+  });
 
   ngOnInit(): void {
     this.ticketService.getOffers().subscribe({
       next: (data) => {
-        this.offers = data;
+        this.offers.set(data);
+        this.loadError.set(null);
+        this.isLoading.set(false);
       },
-      error: (err) => console.error(err),
-    });
-  }
-
-  protected get filteredOffers(): TicketOffer[] {
-    return this.offers.filter((offer) => {
-      const matchesTicketType =
-        this.currentFilters.ticketType === 'ALL' ||
-        offer.ticketType === this.currentFilters.ticketType;
-      const matchesFareType =
-        this.currentFilters.fareType === 'ALL' || offer.fareType === this.currentFilters.fareType;
-
-      return matchesTicketType && matchesFareType;
+      error: (err) => {
+        console.error(err);
+        this.loadError.set('FETCH_OFFERS_FAILED');
+        this.isLoading.set(false);
+      },
     });
   }
 
   protected onFiltersChanged(filters: OfferFiltersValue): void {
-    this.currentFilters = filters;
+    this.currentFilters.set(filters);
   }
 }
