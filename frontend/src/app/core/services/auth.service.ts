@@ -44,7 +44,17 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(AuthService.TOKEN_KEY);
+    const token = localStorage.getItem(AuthService.TOKEN_KEY);
+    if (!token) {
+      return null;
+    }
+
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
+
+    return token;
   }
 
   logout(): void {
@@ -54,10 +64,14 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem(AuthService.TOKEN_KEY);
+    return this.getToken() !== null;
   }
 
   getRole(): AuthResponse['role'] | null {
+    if (!this.isLoggedIn()) {
+      return null;
+    }
+
     const role = localStorage.getItem(AuthService.ROLE_KEY);
     if (role === 'PASSENGER' || role === 'INSPECTOR') {
       return role;
@@ -67,6 +81,10 @@ export class AuthService {
   }
 
   getUserEmail(): string | null {
+    if (!this.isLoggedIn()) {
+      return null;
+    }
+
     return localStorage.getItem(AuthService.EMAIL_KEY);
   }
 
@@ -81,5 +99,40 @@ export class AuthService {
     }
 
     return '/login';
+  }
+
+  private isTokenExpired(token: string): boolean {
+    const expiration = this.extractTokenExpiration(token);
+    if (expiration === null) {
+      return true;
+    }
+
+    return Date.now() >= expiration * 1000;
+  }
+
+  private extractTokenExpiration(token: string): number | null {
+    const tokenParts = token.split('.');
+    if (tokenParts.length < 2) {
+      return null;
+    }
+
+    const payload = this.decodeJwtPayload(tokenParts[1]);
+    if (!payload || typeof payload.exp !== 'number' || !Number.isFinite(payload.exp)) {
+      return null;
+    }
+
+    return payload.exp;
+  }
+
+  private decodeJwtPayload(encodedPayload: string): { exp?: unknown } | null {
+    const normalizedPayload = encodedPayload.replace(/-/g, '+').replace(/_/g, '/');
+    const paddingLength = (4 - (normalizedPayload.length % 4)) % 4;
+    const paddedPayload = normalizedPayload + '='.repeat(paddingLength);
+
+    try {
+      return JSON.parse(globalThis.atob(paddedPayload)) as { exp?: unknown };
+    } catch {
+      return null;
+    }
   }
 }

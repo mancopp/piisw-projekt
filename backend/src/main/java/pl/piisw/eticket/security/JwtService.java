@@ -20,7 +20,7 @@ public class JwtService {
     @Value("${jwt.secret:ToJestBardzoTajnyKluczDoAplikacjiBiletowejWymaganyPrzezJWT123!}")
     private String secretKey;
 
-    @Value("${jwt.expiration:86400000}")
+    @Value("${jwt.expiration:3600000}")
     private long jwtExpiration;
 
     public String extractUsername(String token) {
