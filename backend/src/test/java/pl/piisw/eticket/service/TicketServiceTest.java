@@ -310,6 +310,40 @@ class TicketServiceTest {
             var afterActivation = ticketRepository.findByCode(purchase.getCode()).orElseThrow();
             assertEquals(TicketStatus.ACTIVATED, afterActivation.getStatus());
         }
+
+        @Test
+        @DisplayName("Passenger can fetch own ticket by id")
+        void passengerCanFetchOwnTicketById() {
+            AppUser passenger = userRepository.save(passenger());
+            var purchase = ticketService.purchaseTicket(passenger, new PurchaseRequest(1L, null));
+            Long ticketId = ticketRepository.findByCode(purchase.getCode()).orElseThrow().getId();
+
+            var ticket = ticketService.getMyTicketById(passenger, ticketId);
+
+            assertEquals(ticketId, ticket.getId());
+            assertEquals(purchase.getCode(), ticket.getCode());
+        }
+
+        @Test
+        @DisplayName("Passenger cannot fetch ticket owned by another user")
+        void passengerCannotFetchAnotherUsersTicketById() {
+            AppUser owner = userRepository.save(passenger());
+            AppUser anotherPassenger = userRepository.save(
+                    AppUser.builder()
+                            .email("another-user@example.com")
+                            .passwordHash("hash")
+                            .role(UserRole.PASSENGER)
+                            .build()
+            );
+            var purchase = ticketService.purchaseTicket(owner, new PurchaseRequest(1L, null));
+            Long ticketId = ticketRepository.findByCode(purchase.getCode()).orElseThrow().getId();
+
+            ResponseStatusException exception = assertThrows(
+                    ResponseStatusException.class,
+                    () -> ticketService.getMyTicketById(anotherPassenger, ticketId)
+            );
+            assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        }
     }
 
     @Nested

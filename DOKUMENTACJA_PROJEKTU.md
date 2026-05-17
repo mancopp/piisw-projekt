@@ -193,6 +193,23 @@ Response `200`:
 ]
 ```
 
+#### `GET /tickets/my/{ticketId}`
+Response `200`:
+```json
+{
+  "id": 2001,
+  "code": "TCK-4Q7K8R2M9P",
+  "ticketType": "TIME",
+  "fareType": "NORMAL",
+  "status": "ACTIVATED",
+  "purchasedAt": "2026-05-04T17:00:00Z",
+  "activatedAt": "2026-05-04T17:10:00Z",
+  "activatedVehicleId": "KR-105",
+  "validFrom": "2026-05-04T17:10:00Z",
+  "validTo": "2026-05-04T17:30:00Z"
+}
+```
+
 #### `GET /transactions/my`
 Response `200`:
 ```json

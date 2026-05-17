@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ChevronRight, LucideAngularModule, Ticket } from 'lucide-angular';
@@ -20,9 +20,21 @@ import { TicketService } from '../core/services/ticket.service';
         <p class="text-sm text-slate-600">Podgląd aktywnych i historycznych biletów użytkownika.</p>
       </header>
 
-      @if (tickets.length > 0) {
+      @if (isLoading()) {
+        <section
+          class="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white py-16 px-4 text-center"
+        >
+          <p class="text-sm text-slate-600">Ładowanie biletów...</p>
+        </section>
+      } @else if (loadError()) {
+        <section
+          class="flex flex-col items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 py-16 px-4 text-center"
+        >
+          <p class="text-sm text-rose-800">Nie udało się pobrać biletów. Spróbuj odświeżyć stronę.</p>
+        </section>
+      } @else if (tickets().length > 0) {
         <section class="grid gap-4 sm:grid-cols-2">
-          @for (ticket of tickets; track ticket.code) {
+          @for (ticket of tickets(); track ticket.code) {
             <a
               class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
               [routerLink]="['/my-tickets', ticket.id]"
@@ -97,14 +109,22 @@ export class MyTicketsPageComponent implements OnInit {
 
   protected readonly ticketsIcon = Ticket;
   protected readonly detailsIcon = ChevronRight;
-  protected tickets: MyTicket[] = [];
+  protected readonly tickets = signal<MyTicket[]>([]);
+  protected readonly isLoading = signal(true);
+  protected readonly loadError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.ticketService.getMyTickets().subscribe({
       next: (data) => {
-        this.tickets = data;
+        this.tickets.set(data);
+        this.loadError.set(null);
+        this.isLoading.set(false);
       },
-      error: (err) => console.error('Błąd pobierania biletów', err),
+      error: (err) => {
+        console.error('Błąd pobierania biletów', err);
+        this.loadError.set('FETCH_TICKETS_FAILED');
+        this.isLoading.set(false);
+      },
     });
   }
 }

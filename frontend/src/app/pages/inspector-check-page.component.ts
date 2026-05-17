@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   InspectorCheckFormComponent,
   InspectorCheckFormValue,
@@ -28,19 +28,25 @@ interface TicketCheckResult {
         <app-inspector-check-form (submitted)="onFormSubmit($event)" />
       </section>
 
-      @if (result?.status === 'VALID') {
+      @if (result()?.status === 'VALID') {
         <section
           class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
         >
-          <p class="font-semibold">Wynik: WAŻNY ({{ result?.status }})</p>
-          <p>Powód: {{ result?.reason }}</p>
+          <p class="font-semibold">Wynik: WAŻNY ({{ result()?.status }})</p>
+          <p>Powód: {{ result()?.reason }}</p>
         </section>
       }
 
-      @if (result?.status === 'INVALID') {
+      @if (result()?.status === 'INVALID') {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          <p class="font-semibold">Wynik: NIEWAŻNY ({{ result?.status }})</p>
-          <p>Powód: {{ result?.reason }}</p>
+          <p class="font-semibold">Wynik: NIEWAŻNY ({{ result()?.status }})</p>
+          <p>Powód: {{ result()?.reason }}</p>
+        </section>
+      }
+
+      @if (requestError()) {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          {{ requestError() }}
         </section>
       }
     </div>
@@ -49,17 +55,20 @@ interface TicketCheckResult {
 export class InspectorCheckPageComponent {
   private ticketService = inject(TicketService);
 
-  protected result: TicketCheckResult | null = null;
+  protected readonly result = signal<TicketCheckResult | null>(null);
+  protected readonly requestError = signal<string | null>(null);
 
   protected onFormSubmit(formValue: InspectorCheckFormValue): void {
-    this.result = null;
+    this.result.set(null);
+    this.requestError.set(null);
 
     this.ticketService.checkTicket(formValue.ticketCode, formValue.vehicleId).subscribe({
       next: (response) => {
-        this.result = response;
+        this.result.set(response);
       },
       error: (err) => {
         console.error('Błąd podczas weryfikacji', err);
+        this.requestError.set('Nie udało się zweryfikować biletu. Spróbuj ponownie.');
       },
     });
   }

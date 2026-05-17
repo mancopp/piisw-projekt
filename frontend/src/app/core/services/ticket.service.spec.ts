@@ -22,6 +22,29 @@ describe('TicketService', () => {
     httpMock.verify();
   });
 
+  it('should fetch a single user ticket by id', async () => {
+    const resultPromise = firstValueFrom(service.getMyTicketById(102));
+
+    const request = httpMock.expectOne(`${API_BASE_URL}/tickets/my/102`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      id: 102,
+      code: 'TCK-4Q7K8R2M9P',
+      ticketType: 'TIME',
+      fareType: 'NORMAL',
+      status: 'ACTIVATED',
+      purchasedAt: new Date().toISOString(),
+      activatedAt: new Date().toISOString(),
+      activatedVehicleId: 'KR-105',
+      validFrom: new Date().toISOString(),
+      validTo: new Date().toISOString(),
+    });
+
+    const ticket = await resultPromise;
+    expect(ticket.id).toBe(102);
+    expect(ticket.code).toBe('TCK-4Q7K8R2M9P');
+  });
+
   it('should return VALID for activated ticket with matching vehicle', async () => {
     const resultPromise = firstValueFrom(service.checkTicket('TCK-4Q7K8R2M9P', 'KR-105'));
 

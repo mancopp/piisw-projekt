@@ -90,7 +90,7 @@ export class TicketScanPageComponent implements OnInit {
 
     this.ticketService.getMyTicketById(ticketId).subscribe({
       next: (ticket) => {
-        this.ticket = ticket ?? null;
+        this.ticket = ticket;
       },
       error: (err) => {
         console.error('Błąd pobierania biletu do skanowania', err);

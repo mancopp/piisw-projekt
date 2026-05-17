@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 import pl.piisw.eticket.dto.PurchaseRequest;
+import pl.piisw.eticket.dto.TicketResponse;
 import pl.piisw.eticket.dto.TicketActivationRequest;
 import pl.piisw.eticket.dto.TicketActivationResponse;
 import pl.piisw.eticket.dto.TicketCheckRequest;
@@ -58,38 +59,16 @@ public class TicketService {
                 .build();
     }
 
-    public java.util.List<pl.piisw.eticket.dto.TicketResponse> getMyTickets(AppUser user) {
+    public java.util.List<TicketResponse> getMyTickets(AppUser user) {
         return ticketRepository.findAllByUser(user).stream()
-                .map(ticket -> {
-                    Instant validFrom = null;
-                    Instant validTo = null;
-                    
-                    if (ticket instanceof PeriodTicket periodTicket) {
-                        validFrom = periodTicket.getValidFrom();
-                        validTo = periodTicket.getValidTo();
-                    } else if (ticket instanceof TimeBasedTicket timeTicket) {
-                        Instant activatedAt = timeTicket.getActivatedAt();
-                        Integer durationMinutes = timeTicket.getDurationMinutes();
-                        if (activatedAt != null && durationMinutes != null) {
-                            validFrom = activatedAt;
-                            validTo = activatedAt.plus(durationMinutes, ChronoUnit.MINUTES);
-                        }
-                    }
-                    
-                    return pl.piisw.eticket.dto.TicketResponse.builder()
-                            .id(ticket.getId())
-                            .code(ticket.getCode())
-                            .ticketType(ticket.getOffer().getTicketType())
-                            .fareType(ticket.getOffer().getFareType())
-                            .status(ticket.getStatus())
-                            .purchasedAt(ticket.getPurchasedAt())
-                            .activatedAt(ticket.getActivatedAt())
-                            .activatedVehicleId(ticket.getActivatedVehicleId())
-                            .validFrom(validFrom)
-                            .validTo(validTo)
-                            .build();
-                })
+                .map(this::toTicketResponse)
                 .toList();
+    }
+
+    public TicketResponse getMyTicketById(AppUser user, Long ticketId) {
+        Ticket ticket = ticketRepository.findByIdAndUser(ticketId, user)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Nie znaleziono biletu!"));
+        return toTicketResponse(ticket);
     }
 
     public TicketActivationResponse activateTicket(TicketActivationRequest request) {
@@ -253,5 +232,35 @@ public class TicketService {
                 yield ticket;
             }
         };
+    }
+
+    private TicketResponse toTicketResponse(Ticket ticket) {
+        Instant validFrom = null;
+        Instant validTo = null;
+
+        if (ticket instanceof PeriodTicket periodTicket) {
+            validFrom = periodTicket.getValidFrom();
+            validTo = periodTicket.getValidTo();
+        } else if (ticket instanceof TimeBasedTicket timeTicket) {
+            Instant activatedAt = timeTicket.getActivatedAt();
+            Integer durationMinutes = timeTicket.getDurationMinutes();
+            if (activatedAt != null && durationMinutes != null) {
+                validFrom = activatedAt;
+                validTo = activatedAt.plus(durationMinutes, ChronoUnit.MINUTES);
+            }
+        }
+
+        return TicketResponse.builder()
+                .id(ticket.getId())
+                .code(ticket.getCode())
+                .ticketType(ticket.getOffer().getTicketType())
+                .fareType(ticket.getOffer().getFareType())
+                .status(ticket.getStatus())
+                .purchasedAt(ticket.getPurchasedAt())
+                .activatedAt(ticket.getActivatedAt())
+                .activatedVehicleId(ticket.getActivatedVehicleId())
+                .validFrom(validFrom)
+                .validTo(validTo)
+                .build();
     }
 }

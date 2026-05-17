@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import {
@@ -19,35 +19,40 @@ import { TicketService } from '../core/services/ticket.service';
         <p class="text-sm text-slate-600">Finalizacja zakupu dla oferty #{{ offerId }}.</p>
       </header>
 
-      @if (selectedOffer) {
+      @if (isLoadingOffer()) {
+        <section class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          Ładowanie danych oferty...
+        </section>
+      } @else if (offerLoadError()) {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          Nie udało się pobrać danych oferty. Spróbuj odświeżyć stronę.
+        </section>
+      } @else if (selectedOffer(); as offer) {
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 class="mb-3 text-lg font-medium text-slate-900">Wybrana oferta</h3>
           <dl class="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
             <div class="flex gap-1">
               <dt class="font-medium text-slate-900">Nazwa:</dt>
-              <dd>{{ selectedOffer.name }}</dd>
+              <dd>{{ offer.name }}</dd>
             </div>
             <div class="flex gap-1">
               <dt class="font-medium text-slate-900">Typ:</dt>
-              <dd>{{ selectedOffer.ticketType }}</dd>
+              <dd>{{ offer.ticketType }}</dd>
             </div>
             <div class="flex gap-1">
               <dt class="font-medium text-slate-900">Taryfa:</dt>
-              <dd>{{ selectedOffer.fareType }}</dd>
+              <dd>{{ offer.fareType }}</dd>
             </div>
             <div class="flex gap-1">
               <dt class="font-medium text-slate-900">Cena:</dt>
-              <dd>{{ selectedOffer.price.toFixed(2) }} PLN</dd>
+              <dd>{{ offer.price.toFixed(2) }} PLN</dd>
             </div>
           </dl>
         </section>
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 class="mb-3 text-lg font-medium text-slate-900">Opcje ważności biletu</h3>
-          <app-purchase-options-form
-            [ticketType]="selectedOffer.ticketType"
-            (submitted)="onFormSubmit($event)"
-          />
+          <app-purchase-options-form [ticketType]="offer.ticketType" (submitted)="onFormSubmit($event)" />
         </section>
       } @else {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
@@ -55,20 +60,20 @@ import { TicketService } from '../core/services/ticket.service';
         </section>
       }
 
-      @if (lastSubmitted) {
+      @if (lastSubmitted(); as submitted) {
         <section class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
           <p class="font-medium">Formularz zakupu gotowy do wysłania.</p>
-          @if (lastSubmitted.validFrom) {
-            <p>Data rozpoczęcia: {{ lastSubmitted.validFrom }}</p>
+          @if (submitted.validFrom) {
+            <p>Data rozpoczęcia: {{ submitted.validFrom }}</p>
           } @else {
             <p>Brak dodatkowych danych wymaganych dla tego typu biletu.</p>
           }
         </section>
       }
 
-      @if (purchaseError) {
+      @if (purchaseError()) {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          {{ purchaseError }}
+          {{ purchaseError() }}
         </section>
       }
     </div>
@@ -79,34 +84,44 @@ export class PurchasePageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly ticketService = inject(TicketService);
   protected readonly offerId = Number(this.route.snapshot.paramMap.get('offerId'));
-  protected selectedOffer: TicketOffer | null = null;
-  protected lastSubmitted: PurchaseFormValue | null = null;
-  protected purchaseError: string | null = null;
+  protected readonly offers = signal<TicketOffer[]>([]);
+  protected readonly isLoadingOffer = signal(true);
+  protected readonly offerLoadError = signal<string | null>(null);
+  protected readonly selectedOffer = computed(
+    () => this.offers().find((offer) => offer.id === this.offerId) ?? null,
+  );
+  protected readonly lastSubmitted = signal<PurchaseFormValue | null>(null);
+  protected readonly purchaseError = signal<string | null>(null);
 
   ngOnInit(): void {
     if (!Number.isInteger(this.offerId) || this.offerId <= 0) {
+      this.isLoadingOffer.set(false);
       return;
     }
 
     this.ticketService.getOffers().subscribe({
       next: (offers) => {
-        this.selectedOffer = offers.find((offer) => offer.id === this.offerId) ?? null;
+        this.offers.set(offers);
+        this.offerLoadError.set(null);
+        this.isLoadingOffer.set(false);
       },
       error: (err) => {
         console.error('Błąd pobierania oferty biletu', err);
+        this.offerLoadError.set('FETCH_OFFER_FAILED');
+        this.isLoadingOffer.set(false);
       },
     });
   }
 
   protected onFormSubmit(formValue: PurchaseFormValue): void {
-    this.lastSubmitted = formValue;
-    this.purchaseError = null;
+    this.lastSubmitted.set(formValue);
+    this.purchaseError.set(null);
     this.ticketService.purchaseTicket(this.offerId, formValue.validFrom).subscribe({
       next: (response) => {
         this.router.navigate(['/my-tickets', response.ticketId]);
       },
       error: (err) => {
-        this.purchaseError = 'Nie udało się zrealizować zakupu. Spróbuj ponownie.';
+        this.purchaseError.set('Nie udało się zrealizować zakupu. Spróbuj ponownie.');
         console.error('Błąd podczas zakupu biletu', err);
       },
     });

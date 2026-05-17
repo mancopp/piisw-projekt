@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.piisw.eticket.dto.PurchaseRequest;
+import pl.piisw.eticket.dto.TicketResponse;
 import pl.piisw.eticket.dto.TicketPurchaseResponse;
 import pl.piisw.eticket.model.AppUser;
 import pl.piisw.eticket.service.TicketService;
@@ -27,8 +28,15 @@ public class TicketController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<java.util.List<pl.piisw.eticket.dto.TicketResponse>> getMyTickets(
+    public ResponseEntity<java.util.List<TicketResponse>> getMyTickets(
             @AuthenticationPrincipal AppUser user) {
         return ResponseEntity.ok(ticketService.getMyTickets(user));
+    }
+
+    @GetMapping("/my/{ticketId}")
+    public ResponseEntity<TicketResponse> getMyTicketById(
+            @AuthenticationPrincipal AppUser user,
+            @PathVariable Long ticketId) {
+        return ResponseEntity.ok(ticketService.getMyTicketById(user, ticketId));
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ArrowLeft, Copy, Check, LucideAngularModule } from 'lucide-angular';
@@ -20,7 +20,15 @@ import { TicketService } from '../core/services/ticket.service';
         Wróć do listy biletów
       </a>
 
-      @if (ticket) {
+      @if (isLoadingTicket()) {
+        <section class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+          Ładowanie biletu...
+        </section>
+      } @else if (ticketLoadError()) {
+        <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+          Nie udało się pobrać szczegółów biletu. Spróbuj odświeżyć stronę.
+        </section>
+      } @else if (ticket(); as currentTicket) {
         <div
           class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 shadow-2xl text-white"
         >
@@ -31,15 +39,15 @@ import { TicketService } from '../core/services/ticket.service';
 
           <div class="relative z-10 flex flex-col items-center text-center">
             <p class="mb-1 text-blue-100 font-medium uppercase tracking-wider text-xs">
-              {{ ticket.ticketType }} - {{ ticket.fareType }}
+              {{ currentTicket.ticketType }} - {{ currentTicket.fareType }}
             </p>
 
-            <h2 class="mb-6 text-2xl font-bold">Status: {{ ticket.status }}</h2>
+            <h2 class="mb-6 text-2xl font-bold">Status: {{ currentTicket.status }}</h2>
 
             <div class="mb-6 rounded-2xl bg-white p-4 shadow-inner">
               <img
                 [src]="
-                  'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + ticket.code
+                  'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + currentTicket.code
                 "
                 alt="Kod QR biletu"
                 class="h-48 w-48 object-contain"
@@ -51,21 +59,21 @@ import { TicketService } from '../core/services/ticket.service';
             >
               <div>
                 <p class="text-sm text-blue-100 mb-1">Kod biletu</p>
-                <p class="font-mono text-xl font-semibold tracking-widest">{{ ticket.code }}</p>
+                <p class="font-mono text-xl font-semibold tracking-widest">{{ currentTicket.code }}</p>
               </div>
               <div class="text-right text-xs text-blue-100">
                 <p>Ważny do:</p>
                 <p class="font-semibold">
-                  {{ ticket.validTo ? (ticket.validTo | date: 'dd.MM.yyyy HH:mm') : '—' }}
+                  {{ currentTicket.validTo ? (currentTicket.validTo | date: 'dd.MM.yyyy HH:mm') : '—' }}
                 </p>
               </div>
             </div>
 
             <button
-              (click)="copyCode(ticket.code)"
+              (click)="copyCode(currentTicket.code)"
               class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-indigo-600 shadow-md transition-all hover:bg-slate-50 hover:shadow-lg active:scale-95"
             >
-              @if (copied) {
+              @if (copied()) {
                 <lucide-angular [img]="checkIcon" [size]="18" />
                 Skopiowano do schowka!
               } @else {
@@ -77,7 +85,7 @@ import { TicketService } from '../core/services/ticket.service';
         </div>
       } @else {
         <section class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
-          Ładowanie biletu lub nie znaleziono podanego identyfikatora.
+          Nie znaleziono biletu o podanym identyfikatorze.
         </section>
       }
     </div>
@@ -91,31 +99,38 @@ export class TicketDetailsPageComponent implements OnInit {
   protected readonly copyIcon = Copy;
   protected readonly checkIcon = Check;
 
-  protected ticket: MyTicket | null = null;
-  protected copied: boolean = false;
+  protected readonly ticket = signal<MyTicket | null>(null);
+  protected readonly copied = signal(false);
+  protected readonly isLoadingTicket = signal(true);
+  protected readonly ticketLoadError = signal<string | null>(null);
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('ticketId');
     const ticketId = Number(idParam);
 
     if (!Number.isInteger(ticketId) || ticketId <= 0) {
+      this.isLoadingTicket.set(false);
       return;
     }
 
     this.ticketService.getMyTicketById(ticketId).subscribe({
       next: (ticket) => {
-        this.ticket = ticket ?? null;
+        this.ticket.set(ticket);
+        this.ticketLoadError.set(null);
+        this.isLoadingTicket.set(false);
       },
       error: (err) => {
         console.error('Błąd pobierania szczegółów biletu', err);
+        this.ticketLoadError.set('FETCH_TICKET_DETAILS_FAILED');
+        this.isLoadingTicket.set(false);
       },
     });
   }
 
   copyCode(code: string): void {
     navigator.clipboard.writeText(code).then(() => {
-      this.copied = true;
-      setTimeout(() => (this.copied = false), 2000);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
     });
   }
 }

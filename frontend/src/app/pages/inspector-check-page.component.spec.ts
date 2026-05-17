@@ -34,7 +34,7 @@ describe('InspectorCheckPageComponent', () => {
     });
 
     expect(checkTicket).toHaveBeenCalledWith('TCK-4Q7K8R2M9P', 'KR-105');
-    expect(fixture.componentInstance['result']).toEqual({ status: 'VALID', reason: 'OK' });
+    expect(fixture.componentInstance['result']()).toEqual({ status: 'VALID', reason: 'OK' });
   });
 
   it('should render INVALID result from service', () => {
@@ -45,7 +45,7 @@ describe('InspectorCheckPageComponent', () => {
       vehicleId: 'KR-105',
     });
 
-    expect(fixture.componentInstance['result']).toEqual({
+    expect(fixture.componentInstance['result']()).toEqual({
       status: 'INVALID',
       reason: 'Bilet nieaktywny',
     });

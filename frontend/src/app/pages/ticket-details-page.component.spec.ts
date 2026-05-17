@@ -90,9 +90,9 @@ describe('TicketDetailsPageComponent', () => {
     await Promise.resolve();
 
     expect(writeText).toHaveBeenCalledWith('TCK-4Q7K8R2M9P');
-    expect(fixture.componentInstance['copied']).toBe(true);
+    expect(fixture.componentInstance['copied']()).toBe(true);
 
     vi.advanceTimersByTime(2000);
-    expect(fixture.componentInstance['copied']).toBe(false);
+    expect(fixture.componentInstance['copied']()).toBe(false);
   });
 });

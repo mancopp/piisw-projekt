@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { catchError, map, Observable, of, throwError } from 'rxjs';
+import { catchError, Observable, of, throwError } from 'rxjs';
 
 import { API_BASE_URL } from '../config/api.config';
 import {
@@ -33,8 +33,8 @@ export class TicketService {
     return this.http.get<MyTicket[]>(`${API_BASE_URL}/tickets/my`);
   }
 
-  getMyTicketById(ticketId: number): Observable<MyTicket | undefined> {
-    return this.getMyTickets().pipe(map((tickets) => tickets.find((ticket) => ticket.id === ticketId)));
+  getMyTicketById(ticketId: number): Observable<MyTicket> {
+    return this.http.get<MyTicket>(`${API_BASE_URL}/tickets/my/${ticketId}`);
   }
 
   getMyTransactions(): Observable<TransactionResponse[]> {
